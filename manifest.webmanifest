@@ -1,12 +1,11 @@
 {
   "name": "News One Production Teleprompter",
   "short_name": "N1 Prompter",
-  "description": "Private tablet teleprompter for News One Production",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#05070b",
-  "theme_color": "#090b10",
+  "background_color": "#050609",
+  "theme_color": "#080b10",
   "orientation": "landscape",
   "icons": [
     {
