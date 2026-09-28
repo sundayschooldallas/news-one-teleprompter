@@ -1,41 +1,76 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080b10"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><title>News One Production Teleprompter</title>
+<!doctype html><html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b10"><link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>News One Production Teleprompter</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Arial,sans-serif;background:#07090d;color:#fff}button,select,input{font:inherit}button{touch-action:manipulation}
-header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:#0d1119;border-bottom:1px solid #293241}.brand{font-weight:900;letter-spacing:1.4px}.brand small{display:block;color:#9ba5b5;font-size:10px;margin-top:3px}.mode{font-weight:800;background:#18202d;padding:8px 11px;border-radius:20px}
-#editMode{height:calc(100% - 64px);display:grid;grid-template-rows:auto 1fr auto}.toolbar{padding:9px;background:#111722;border-bottom:1px solid #293241;display:flex;gap:7px;flex-wrap:wrap;align-items:center}.toolbar button,.toolbar select,.toolbar input{height:42px;border:1px solid #354155;background:#1a2230;color:#fff;border-radius:9px;padding:0 10px}.toolbar button{min-width:44px;font-weight:800}.toolbar .primary{background:#fff;color:#080b10}.toolbar input[type=color]{width:48px;padding:5px}
-#editor{margin:10px;padding:24px;overflow:auto;background:#fff;color:#111;border-radius:14px;outline:none;font-size:28px;line-height:1.45}.settings{padding:9px 12px;background:#101620;border-top:1px solid #293241;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center}.setting{display:flex;align-items:center;gap:7px;color:#b2bdcc;font-size:12px;font-weight:800}.setting input[type=range]{width:145px}.setting input[type=number]{width:62px;background:#192230;color:#fff;border:1px solid #3a4659;border-radius:8px;padding:8px}.actions{display:flex;justify-content:center;gap:9px;padding:10px;background:#0d1119}.actions button{border:0;border-radius:11px;padding:14px 20px;font-weight:900}.save{background:#1d2735;color:#fff}.open{background:#fff;color:#080b10}
-#prompt{display:none;position:fixed;inset:0;z-index:50;background:#050609}.promptHeader{position:absolute;z-index:70;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 14px;background:linear-gradient(#050609dd,transparent)}#status{font-weight:900}.exit{background:#171d27;color:#fff;border:1px solid #3b4555;border-radius:10px;padding:9px 12px}
-#view{position:absolute;inset:0;overflow:hidden}.guide{position:absolute;z-index:55;top:48%;left:3%;right:3%;height:2px;background:#ef233c99}.promptText{position:absolute;top:44%;left:7%;right:7%;padding:48vh 0 60vh;text-align:center;font-size:64px;line-height:1.4;overflow-wrap:anywhere}.promptText *{max-width:100%}.mirror .promptText{transform:scaleX(-1)}
-#count{display:none;position:absolute;z-index:100;inset:0;background:#050609f5;place-items:center;font-size:min(42vw,330px);font-weight:900}#count.on{display:grid}.controls{position:absolute;z-index:80;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:7px;flex-wrap:wrap;justify-content:center;background:#0d121bdd;border:1px solid #334054;border-radius:16px;padding:9px}.controls button{height:49px;min-width:55px;background:#192230;color:#fff;border:1px solid #3d4a60;border-radius:10px;font-weight:900}.controls .start{background:#fff;color:#080b10}
-@media(max-width:700px){#editor{font-size:22px;margin:7px;padding:16px}.toolbar{max-height:155px;overflow:auto}.promptText{font-size:48px;left:5%;right:5%}.brand{font-size:13px}}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Arial,sans-serif;background:#07090d;color:#fff}
+button,select,input{font:inherit}button{touch-action:manipulation}
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:#0d1119;border-bottom:1px solid #293241}
+.brand{font-weight:900;letter-spacing:1.3px}.brand small{display:block;color:#9ba5b5;font-size:10px;margin-top:3px}.mode{font-weight:800;background:#18202d;padding:8px 11px;border-radius:20px}
+#editMode{height:calc(100dvh - 64px);display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.toolbar{padding:9px;background:#111722;border-bottom:1px solid #293241;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.toolbar button,.toolbar select,.toolbar input{height:42px;border:1px solid #354155;background:#1a2230;color:#fff;border-radius:9px;padding:0 10px}
+.toolbar button{min-width:44px;font-weight:800}.toolbar input[type=color]{width:48px;padding:5px}
+#editorWrap{min-height:0;overflow:auto;padding:10px}
+#editor{min-height:100%;padding:24px;background:#fff;color:#111;border-radius:14px;outline:none;font-size:28px;line-height:1.45;overflow-wrap:anywhere}
+.settings{padding:9px 12px;background:#101620;border-top:1px solid #293241;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center}
+.setting{display:flex;align-items:center;gap:7px;color:#b2bdcc;font-size:12px;font-weight:800}.setting input[type=range]{width:145px}
+.setting input[type=number]{width:62px;background:#192230;color:#fff;border:1px solid #3a4659;border-radius:8px;padding:8px}
+.actions{display:flex;justify-content:center;gap:9px;padding:10px;background:#0d1119}.actions button{border:0;border-radius:11px;padding:14px 20px;font-weight:900}.save{background:#1d2735;color:#fff}.open{background:#fff;color:#080b10}
+#prompt{display:none;position:fixed;inset:0;z-index:50;background:#050609}
+.promptHeader{position:absolute;z-index:70;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 14px;background:linear-gradient(#050609dd,transparent)}
+#status{font-weight:900}.exit{background:#171d27;color:#fff;border:1px solid #3b4555;border-radius:10px;padding:9px 12px}
+#view{position:absolute;inset:0;overflow:hidden}.guide{position:absolute;z-index:55;top:48%;left:3%;right:3%;height:2px;background:#ef233c99}
+.promptText{position:absolute;top:44%;left:7%;right:7%;padding:48vh 0 60vh;font-size:64px;line-height:1.4;overflow-wrap:anywhere}
+/* Preserve editor formatting: do NOT force alignment, font family, weight, etc. */
+.promptText p,.promptText div,.promptText h1,.promptText h2,.promptText h3,.promptText h4,.promptText ul,.promptText ol,.promptText blockquote{max-width:100%}
+.promptText img{max-width:100%;height:auto}.mirror .promptText{transform:scaleX(-1)}
+#count{display:none;position:absolute;z-index:100;inset:0;background:#050609f5;place-items:center;font-size:min(42vw,330px);font-weight:900}#count.on{display:grid}
+.controls{position:absolute;z-index:80;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:7px;flex-wrap:wrap;justify-content:center;background:#0d121bdd;border:1px solid #334054;border-radius:16px;padding:9px;max-width:94vw}
+.controls button{height:49px;min-width:55px;background:#192230;color:#fff;border:1px solid #3d4a60;border-radius:10px;font-weight:900}.controls .start{background:#fff;color:#080b10}
+@media (orientation:portrait){
+ header{height:60px;padding:8px 12px}.brand{font-size:13px}.brand small{font-size:9px}
+ #editMode{height:calc(100dvh - 60px)}.toolbar{max-height:190px;overflow:auto;padding:7px}
+ #editorWrap{padding:7px}#editor{padding:16px;font-size:24px}
+ .settings{gap:8px;padding:8px}.setting{font-size:11px}.setting input[type=range]{width:105px}
+ .actions{padding:8px}.actions button{padding:12px 14px}
+ .promptText{left:5%;right:5%;font-size:52px}.controls{bottom:max(10px,env(safe-area-inset-bottom));gap:5px;padding:6px}.controls button{height:44px;min-width:48px;font-size:13px}
+}
+@media (orientation:landscape){
+ .promptText{left:8%;right:8%}.toolbar{max-height:120px;overflow:auto}
+}
 </style></head><body>
 <header><div class="brand">N1 • NEWS ONE PRODUCTION<small>TABLET TELEPROMPTER STUDIO</small></div><div class="mode">EDITOR</div></header>
 <section id="editMode"><div class="toolbar">
 <button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="underline"><u>U</u></button>
 <select id="font"><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Tahoma</option><option>Times New Roman</option></select>
 <select id="editSize"><option value="20">20px</option><option value="24">24px</option><option value="28" selected>28px</option><option value="32">32px</option><option value="36">36px</option><option value="42">42px</option><option value="48">48px</option><option value="56">56px</option><option value="64">64px</option><option value="72">72px</option></select>
-<input id="color" type="color" value="#111111"><button data-cmd="justifyLeft">LEFT</button><button data-cmd="justifyCenter">CENTER</button><button data-cmd="justifyRight">RIGHT</button><button data-cmd="insertUnorderedList">• LIST</button><button id="clear">CLEAR FORMAT</button>
-</div><div id="editor" contenteditable="true"><h2>News One Production</h2><p>Paste your formatted script here.</p></div>
-<div><div class="settings"><span class="setting">SCROLL SPEED <input id="speed" type="range" min="5" max="180" value="45"><b id="speedV">45</b></span><span class="setting">READING SIZE <input id="readSize" type="range" min="28" max="140" value="64"><b id="sizeV">64px</b></span><span class="setting">LINE SPACING <input id="line" type="range" min="10" max="25" value="14"><b id="lineV">1.4</b></span><span class="setting">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span></div><div class="actions"><button id="save" class="save">SAVE SCRIPT</button><button id="open" class="open">OPEN TELEPROMPTER ▶</button></div></div></section>
+<input id="color" type="color" value="#111111"><button data-cmd="justifyLeft">LEFT</button><button data-cmd="justifyCenter">CENTER</button><button data-cmd="justifyRight">RIGHT</button><button data-cmd="insertUnorderedList">• LIST</button><button data-cmd="insertOrderedList">1. LIST</button><button id="clear">CLEAR FORMAT</button>
+</div><div id="editorWrap"><div id="editor" contenteditable="true"><h2>News One Production</h2><p>Paste your formatted script here.</p></div></div>
+<div><div class="settings"><span class="setting">SCROLL SPEED <input id="speed" type="range" min="5" max="180" value="45"><b id="speedV">45</b></span><span class="setting">READING SCALE <input id="readScale" type="range" min="70" max="220" value="100"><b id="scaleV">100%</b></span><span class="setting">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span></div><div class="actions"><button id="save" class="save">SAVE SCRIPT</button><button id="open" class="open">OPEN TELEPROMPTER ▶</button></div></div></section>
 <section id="prompt"><div class="promptHeader"><div id="status">READY</div><button id="exit" class="exit">✕ EDITOR</button></div><div id="view"><div class="guide"></div><div id="promptText" class="promptText"></div><div id="count">5</div></div><div class="controls"><button id="restart">↺</button><button id="slower">− SPEED</button><button id="start" class="start">▶ START</button><button id="pause">Ⅱ</button><button id="faster">+ SPEED</button><button id="smaller">A−</button><button id="larger">A+</button><button id="mirror">⇄</button><button id="full">⛶</button></div></section>
 <script>
 const $=id=>document.getElementById(id);let playing=false,last=0,offset=0,raf=0,ct=0;
-function persist(){localStorage.setItem('n1html',$('editor').innerHTML);localStorage.setItem('n1speed',$('speed').value);localStorage.setItem('n1size',$('readSize').value);localStorage.setItem('n1line',$('line').value);localStorage.setItem('n1secs',$('secs').value)}
-function updateLabels(){$('speedV').textContent=$('speed').value;$('sizeV').textContent=$('readSize').value+'px';$('lineV').textContent=(+$('line').value/10).toFixed(1);persist();applyPromptStyle()}
-function applyPromptStyle(){$('promptText').style.fontSize=$('readSize').value+'px';$('promptText').style.lineHeight=(+$('line').value/10)}
+function persist(){localStorage.setItem('n1v3html',$('editor').innerHTML);localStorage.setItem('n1v3speed',$('speed').value);localStorage.setItem('n1v3scale',$('readScale').value);localStorage.setItem('n1v3secs',$('secs').value)}
+function updateLabels(){$('speedV').textContent=$('speed').value;$('scaleV').textContent=$('readScale').value+'%';persist();applyScale()}
+function applyScale(){let s=+$('readScale').value/100;$('promptText').style.zoom=s}
 function command(c,v=null){$('editor').focus();document.execCommand(c,false,v);persist()}
 document.querySelectorAll('[data-cmd]').forEach(b=>b.onclick=()=>command(b.dataset.cmd));
 $('font').onchange=()=>command('fontName',$('font').value);$('color').onchange=()=>command('foreColor',$('color').value);$('clear').onclick=()=>command('removeFormat');
-$('editSize').onchange=()=>{let s=$('editSize').value;$('editor').focus();let sel=window.getSelection();if(!sel.rangeCount)return;let r=sel.getRangeAt(0);if(r.collapsed){document.execCommand('fontSize',false,'7');document.querySelectorAll('#editor font[size="7"]').forEach(n=>{n.removeAttribute('size');n.style.fontSize=s+'px'})}else{let span=document.createElement('span');span.style.fontSize=s+'px';try{r.surroundContents(span)}catch(e){document.execCommand('fontSize',false,'7');document.querySelectorAll('#editor font[size="7"]').forEach(n=>{n.removeAttribute('size');n.style.fontSize=s+'px'})}}persist()};
-$('editor').addEventListener('input',persist);$('speed').oninput=updateLabels;$('readSize').oninput=updateLabels;$('line').oninput=updateLabels;$('secs').onchange=persist;$('save').onclick=()=>{persist();alert('Script saved on this tablet.')};
-function openPrompt(){persist();$('promptText').innerHTML=$('editor').innerHTML;applyPromptStyle();$('prompt').style.display='block';restart()}
+$('editSize').onchange=()=>{let s=$('editSize').value;$('editor').focus();document.execCommand('fontSize',false,'7');document.querySelectorAll('#editor font[size="7"]').forEach(n=>{n.removeAttribute('size');n.style.fontSize=s+'px'});persist()};
+$('editor').addEventListener('input',persist);$('speed').oninput=updateLabels;$('readScale').oninput=updateLabels;$('secs').onchange=persist;$('save').onclick=()=>{persist();alert('Script saved on this tablet.')};
+function openPrompt(){persist();$('promptText').innerHTML=$('editor').innerHTML;applyScale();$('prompt').style.display='block';restart()}
 $('open').onclick=openPrompt;$('exit').onclick=()=>{pause();clearInterval(ct);$('count').classList.remove('on');$('prompt').style.display='none'};
 function frame(t){if(!playing)return;if(!last)last=t;offset+=(t-last)/1000*+$('speed').value;last=t;$('promptText').style.top=`calc(44% - ${offset}px)`;raf=requestAnimationFrame(frame)}
 function play(){if(playing)return;playing=true;last=0;$('status').textContent='● PROMPTING';$('status').style.color='#ff4358';raf=requestAnimationFrame(frame)}
 function pause(){playing=false;last=0;cancelAnimationFrame(raf);$('status').textContent='PAUSED';$('status').style.color='#fff'}
 function restart(){pause();offset=0;$('promptText').style.top='44%';$('status').textContent='READY'}
 function start(){restart();let n=Math.max(0,Math.min(30,parseInt($('secs').value)||0));if(!n){play();return}$('count').textContent=n;$('count').classList.add('on');$('status').textContent='COUNTDOWN';clearInterval(ct);ct=setInterval(()=>{n--;$('count').textContent=n;if(n<=0){clearInterval(ct);$('count').classList.remove('on');play()}},1000)}
-$('start').onclick=start;$('pause').onclick=()=>playing?pause():play();$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+5);updateLabels()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-5);updateLabels()};$('larger').onclick=()=>{$('readSize').value=Math.min(140,+$('readSize').value+6);updateLabels()};$('smaller').onclick=()=>{$('readSize').value=Math.max(28,+$('readSize').value-6);updateLabels()};$('mirror').onclick=()=>document.body.classList.toggle('mirror');$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
-let h=localStorage.getItem('n1html');if(h)$('editor').innerHTML=h;$('speed').value=localStorage.getItem('n1speed')||45;$('readSize').value=localStorage.getItem('n1size')||64;$('line').value=localStorage.getItem('n1line')||14;$('secs').value=localStorage.getItem('n1secs')||5;updateLabels();
+$('start').onclick=start;$('pause').onclick=()=>playing?pause():play();$('restart').onclick=restart;
+$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+5);updateLabels()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-5);updateLabels()};
+$('larger').onclick=()=>{$('readScale').value=Math.min(220,+$('readScale').value+10);updateLabels()};$('smaller').onclick=()=>{$('readScale').value=Math.max(70,+$('readScale').value-10);updateLabels()};
+$('mirror').onclick=()=>document.body.classList.toggle('mirror');$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+let h=localStorage.getItem('n1v3html')||localStorage.getItem('n1html');if(h)$('editor').innerHTML=h;$('speed').value=localStorage.getItem('n1v3speed')||localStorage.getItem('n1speed')||45;$('readScale').value=localStorage.getItem('n1v3scale')||100;$('secs').value=localStorage.getItem('n1v3secs')||localStorage.getItem('n1secs')||5;updateLabels();
 if('serviceWorker'in navigator&&location.protocol!=='file:')window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
 </script></body></html>
