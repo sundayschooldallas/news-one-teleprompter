@@ -18,6 +18,10 @@ header{height:62px;display:flex;align-items:center;justify-content:space-between
 #prompt.running .promptTop{opacity:0;pointer-events:none}#prompt.running .controls .extra{display:none}#prompt.running .controls{background:#090d14aa}
 @media(orientation:portrait){header{height:58px}.brand{font-size:13px}#editMode{height:calc(100dvh - 58px)}.toolbar{max-height:145px;overflow:auto}.library select{min-width:160px;flex:1}.library input{min-width:130px;flex:1}#editor{font-size:23px;padding:15px}.promptText{left:2%;right:2%}}
 @media(orientation:landscape){.toolbar{max-height:92px;overflow:auto}.promptText{left:3%;right:3%}}
+
+#prompt.forceRotate{width:100vh;height:100vw;inset:auto;left:50%;top:50%;transform:translate(-50%,-50%) rotate(90deg);transform-origin:center center}
+#prompt.forceRotate #view{inset:0}
+@media(orientation:landscape){#prompt.forceRotate{width:100vw;height:100vh;transform:translate(-50%,-50%) rotate(90deg)}}
 </style></head><body>
 <header><div class="brand">N1 • NEWS ONE PRODUCTION<small>TELEPROMPTER SCRIPT STUDIO</small></div><div class="badge">EDITOR</div></header>
 <section id="editMode">
@@ -25,7 +29,7 @@ header{height:62px;display:flex;align-items:center;justify-content:space-between
 <div class="toolbar"><button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="underline"><u>U</u></button><select id="font"><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Tahoma</option><option>Times New Roman</option></select><select id="editSize"><option value="20">20px</option><option value="24">24px</option><option value="28" selected>28px</option><option value="32">32px</option><option value="36">36px</option><option value="42">42px</option><option value="48">48px</option><option value="56">56px</option><option value="64">64px</option></select><input id="color" type="color" value="#111111"><button data-cmd="justifyLeft">LEFT</button><button data-cmd="justifyCenter">CENTER</button><button data-cmd="justifyRight">RIGHT</button><button data-cmd="insertUnorderedList">• LIST</button><button data-cmd="insertOrderedList">1. LIST</button><button id="clear">CLEAR</button></div>
 <div id="editorWrap"><div id="editor" contenteditable="true"><h2>News One Production</h2><p>Start your script here.</p></div></div>
 <div class="bottom"><div class="settings"><span class="setting">SPEED <input id="speed" type="range" min="5" max="180" value="45"><b id="speedV">45</b></span><span class="setting">READER SCALE <input id="scale" type="range" min="50" max="400" value="100"><b id="scaleV">100%</b></span><span class="setting">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span></div><div class="actions"><button id="saveBottom" class="save">SAVE CURRENT SCRIPT</button><button id="open" class="open">OPEN TELEPROMPTER ▶</button></div></div></section>
-<section id="prompt"><div class="promptTop"><div id="status">READY</div><button id="exit" class="exit">✕ EDITOR</button></div><div id="view"><div class="guide"></div><div id="promptText" class="promptText"></div><div id="count">5</div></div><div class="controls"><button id="restart">↺ RESTART</button><button id="start" class="start">▶ START</button><button id="resume">Ⅱ PAUSE</button><button id="stop" class="stop">■ STOP</button><button id="smaller">A−</button><button id="larger">A+</button><button id="slower" class="extra">− SPEED</button><button id="faster" class="extra">+ SPEED</button><button id="mirror" class="extra">⇄</button><button id="full" class="extra">⛶</button></div></section>
+<section id="prompt"><div class="promptTop"><div id="status">READY</div><button id="exit" class="exit">✕ EDITOR</button></div><div id="view"><div class="guide"></div><div id="promptText" class="promptText"></div><div id="count">5</div></div><div class="controls"><button id="restart">↺ RESTART</button><button id="start" class="start">▶ START</button><button id="resume">Ⅱ PAUSE</button><button id="stop" class="stop">■ STOP</button><button id="smaller">A−</button><button id="larger">A+</button><button id="slower">− SPEED</button><button id="faster">+ SPEED</button><button id="mirror">⇄ MIRROR</button><button id="rotate">↻ ROTATE</button><button id="full" class="extra">⛶</button></div></section>
 <script>
 const $=id=>document.getElementById(id);let playing=false,last=0,offset=0,raf=0,ct=0,currentId=null;
 function getLib(){try{return JSON.parse(localStorage.getItem('n1libraryV4')||'{}')}catch(e){return {}}}function setLib(x){localStorage.setItem('n1libraryV4',JSON.stringify(x))}
@@ -52,7 +56,22 @@ function togglePause(){playing?pause():play()}
 function stop(){playing=false;last=0;cancelAnimationFrame(raf);clearInterval(ct);$('count').classList.remove('on');$('prompt').classList.remove('running');$('status').textContent='STOPPED';$('resume').textContent='▶ RESUME'}
 function restart(){stop();offset=0;$('promptText').style.top='44%';$('status').textContent='READY'}
 function start(){restart();let n=Math.max(0,Math.min(30,parseInt($('secs').value)||0));if(!n)return play();$('count').textContent=n;$('count').classList.add('on');$('status').textContent='COUNTDOWN';ct=setInterval(()=>{n--;$('count').textContent=n;if(n<=0){clearInterval(ct);$('count').classList.remove('on');play()}},1000)}
-$('start').onclick=start;$('resume').onclick=togglePause;$('stop').onclick=stop;$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+5);labels()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-5);labels()};$('larger').onclick=()=>{let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('smaller').onclick=()=>{let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('mirror').onclick=()=>document.body.classList.toggle('mirror');$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+$('start').onclick=start;$('resume').onclick=togglePause;$('stop').onclick=stop;$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+5);labels()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-5);labels()};$('larger').onclick=()=>{let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('smaller').onclick=()=>{let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('mirror').onclick=()=>document.body.classList.toggle('mirror');
+async function rotatePrompt(){
+  const p=$('prompt');
+  try{
+    if(screen.orientation && screen.orientation.lock){
+      if(!document.fullscreenElement && document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+      const want=matchMedia('(orientation: portrait)').matches?'landscape':'portrait';
+      await screen.orientation.lock(want);
+      p.classList.remove('forceRotate');
+      return;
+    }
+  }catch(e){}
+  p.classList.toggle('forceRotate');
+}
+$('rotate').onclick=rotatePrompt;
+$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
 $('speed').value=localStorage.getItem('n1v4speed')||45;$('scale').value=localStorage.getItem('n1v4scale')||100;$('secs').value=localStorage.getItem('n1v4secs')||5;labels();
 let lib=getLib();if(!Object.keys(lib).length){let old=localStorage.getItem('n1v3html')||localStorage.getItem('n1html');currentId='welcome';lib[currentId]={name:'My First Script',html:old||$('editor').innerHTML,updated:Date.now()};setLib(lib)}refreshList();if($('scriptList').value)loadScript($('scriptList').value);
 if('serviceWorker'in navigator&&location.protocol!=='file:')window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
