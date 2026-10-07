@@ -29,17 +29,15 @@ header{height:62px;display:flex;align-items:center;justify-content:space-between
 #orientationDock button{pointer-events:auto;width:58px;min-height:92px;padding:8px 5px;border:1px solid #59677c;border-radius:14px;background:#111923e8;color:#fff;font-weight:900;font-size:24px;box-shadow:0 2px 12px #0008}
 #orientationDock button span{display:block;font-size:9px;letter-spacing:.4px;margin-top:5px}
 body.promptOpen #orientationDock{display:block}
-#promptControls .runningControls{display:none;align-items:center;gap:7px}
-body.promptOpen #promptControls.running{background:transparent;border:0;padding:0}
-body.promptOpen #promptControls.running .runningControls{background:#0d121bdd;border:1px solid #334054;border-radius:16px;padding:9px}
 #promptControls .fullControls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center}
 body.promptOpen #promptControls .fullControls{display:flex}
 body.promptOpen #promptControls .runningControls{display:none}
-body.promptOpen #promptControls.running .fullControls{display:none}
-body.promptOpen #promptControls.running .runningControls{display:flex}
-body.promptOpen #promptControls.running .runningControls #start{display:none}
-body.promptOpen #promptControls.running .runningControls #resume{display:block}
-body.promptOpen #promptControls:not(.running) .runningControls{display:none}
+#runningStack{display:none;position:fixed;z-index:506;right:max(10px,env(safe-area-inset-right));top:calc(82px + 58px);flex-direction:column;gap:7px}
+#runningStack button{width:48px;height:48px;border:1px solid #59677c;border-radius:10px;background:#111923e8;color:#fff;font-weight:900;font-size:18px;box-shadow:0 3px 12px #0008}
+#runningStack button.stop{color:#fff}
+body.promptOpen #runningStack.running{display:flex}
+body.promptOpen #speedMeter{display:flex}
+body.promptOpen #speedMeter.running{display:none}
 #speedMeter{display:none;position:fixed;z-index:505;right:max(10px,env(safe-area-inset-right));top:82px;width:66px;padding:8px 6px;border:1px solid #59677c;border-radius:12px;background:#101720e8;color:#fff;align-items:center;flex-direction:column;gap:5px;box-shadow:0 4px 16px #0008}
 #speedMeter .speedMeterTitle{font-size:9px;font-weight:900;letter-spacing:.7px}
 #speedMeter .speedValue{font-size:16px;font-weight:900;line-height:1}
@@ -65,16 +63,11 @@ body.promptOpen #orientationDock{display:block!important}
 <section id="prompt"><div class="promptTop"><div id="status">READY</div><button id="exit" class="exit">✕ EDITOR</button></div><div id="view"><div id="promptText" class="promptText"></div><div id="count">5</div></div></section>
 
 <div class="controls viewportControls" id="promptControls">
-  <div class="runningControls" id="runningControls">
+  <div class="fullControls" id="fullControls">
+    <button id="restart">↺ RESTART</button>
     <button id="start" class="start">▶ START</button>
     <button id="resume">Ⅱ PAUSE</button>
     <button id="stop" class="stop">■ STOP</button>
-  </div>
-  <div class="fullControls" id="fullControls">
-    <button id="restart">↺ RESTART</button>
-    <button id="startFull" class="start">▶ START</button>
-    <button id="resumeFull">Ⅱ PAUSE</button>
-    <button id="stopFull" class="stop">■ STOP</button>
     <button id="smaller">A−</button>
     <button id="larger">A+</button>
     <button id="slower">− SPEED</button>
@@ -82,6 +75,11 @@ body.promptOpen #orientationDock{display:block!important}
     <button id="mirror">⇄ MIRROR</button>
     <button id="full" class="extra">⛶</button>
   </div>
+</div>
+
+<div id="runningStack">
+  <button id="runningResume" title="Pause / Resume">Ⅱ</button>
+  <button id="runningStop" class="stop" title="Stop">■</button>
 </div>
 <div id="speedMeter" aria-label="Teleprompter speed control">
   <div class="speedMeterTitle">SPEED</div>
@@ -161,10 +159,15 @@ function start(){restart();let n=Math.max(0,Math.min(30,parseInt($('secs').value
 function setPromptControlMode(running){
   const bar=$('promptControls');
   if(bar) bar.classList.toggle('running',!!running);
-  if($('speedMeter')) $('speedMeter').style.display = document.body.classList.contains('promptOpen') ? 'flex' : '';
+  const stack=$('runningStack');
+  if(stack) stack.classList.toggle('running',!!running);
+  const meter=$('speedMeter');
+  if(meter) meter.classList.toggle('running',!!running);
 }
 
-$('start').onclick=start;$('resume').onclick=togglePause;$('stop').onclick=stop;$('startFull').onclick=start;$('resumeFull').onclick=togglePause;$('stopFull').onclick=stop;$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+1);syncPromptSpeed();updateSpeed()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-1);syncPromptSpeed();updateSpeed()};$('larger').onclick=()=>{let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('smaller').onclick=()=>{let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('mirror').onclick=()=>document.body.classList.toggle('mirror');
+$('start').onclick=start;
+$('runningResume').onclick=togglePause;
+$('runningStop').onclick=stop;$('resume').onclick=togglePause;$('stop').onclick=stop;$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+1);syncPromptSpeed();updateSpeed()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-1);syncPromptSpeed();updateSpeed()};$('larger').onclick=()=>{let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('smaller').onclick=()=>{let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('mirror').onclick=()=>document.body.classList.toggle('mirror');
 let viewRotation=0;
 function rotatePrompt(){
   const p=$('prompt');
