@@ -1,106 +1,1503 @@
-<!doctype html><html><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080b10"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes"><title>News One Production Teleprompter</title>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b10">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<title>News One Production Teleprompter</title>
+
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#07090d;color:#fff;font-family:Arial,sans-serif}button,select,input{font:inherit}button{touch-action:manipulation}
-header{height:62px;display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:#0d1119;border-bottom:1px solid #293241}.brand{font-weight:900;letter-spacing:1.2px}.brand small{display:block;color:#9ba5b5;font-size:10px;margin-top:3px}.badge{background:#18202d;padding:8px 11px;border-radius:20px;font-weight:800}
-#editMode{height:calc(100dvh - 62px);display:grid;grid-template-rows:auto auto minmax(0,1fr) auto}.library{padding:8px 10px;background:#0b1018;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #293241}.library select,.library input,.library button,.toolbar button,.toolbar select,.toolbar input{height:40px;border:1px solid #354155;background:#192230;color:#fff;border-radius:9px;padding:0 10px}.library select{min-width:220px}.library input{min-width:180px}.library button,.toolbar button{font-weight:800}
-.toolbar{padding:8px 10px;background:#111722;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #293241}.toolbar input[type=color]{width:46px;padding:5px}
-#editorWrap{min-height:0;overflow:auto;padding:9px}#editor{min-height:100%;padding:22px;background:#fff;color:#111;border-radius:12px;outline:none;font-size:28px;line-height:normal;overflow-wrap:anywhere}
-.bottom{background:#0d1119}.settings{padding:8px 10px;display:flex;gap:13px;flex-wrap:wrap;justify-content:center;align-items:center;border-top:1px solid #293241}.setting{display:flex;align-items:center;gap:6px;color:#b2bdcc;font-size:12px;font-weight:800}.setting input[type=range]{width:130px}.setting input[type=number]{width:60px;background:#192230;color:#fff;border:1px solid #3a4659;border-radius:8px;padding:7px}.actions{display:flex;justify-content:center;gap:8px;padding:9px}.actions button{border:0;border-radius:11px;padding:13px 18px;font-weight:900}.save{background:#1d2735;color:#fff}.open{background:#fff;color:#080b10}
-#prompt{display:none;position:fixed;inset:0;background:#050609;z-index:50}#view{position:absolute;inset:0;overflow:hidden}.guide{position:absolute;z-index:55;top:48%;left:1.5%;right:1.5%;height:2px;background:#ef233c88}
-.promptText{position:absolute;top:44%;left:2.5%;right:2.5%;padding:0 0 55vh;overflow-wrap:anywhere}
-.promptText img{max-width:100%;height:auto}.mirror .promptText{transform:scaleX(-1)}
-#count{display:none;position:absolute;z-index:100;inset:0;background:#050609f5;place-items:center;font-size:min(42vw,330px);font-weight:900}#count.on{display:grid}
-.promptTop{position:absolute;z-index:70;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:9px 12px;background:linear-gradient(#050609dd,transparent)}#status{font-weight:900}.exit{background:#171d27;color:#fff;border:1px solid #3b4555;border-radius:10px;padding:9px 12px}
-.controls{position:absolute;z-index:80;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;max-width:92%;gap:8px;background:#0d121bdd;border:1px solid #334054;border-radius:15px;padding:8px}.controls button{height:50px;min-width:74px;background:#192230;color:#fff;border:1px solid #3d4a60;border-radius:10px;font-weight:900}.controls .start{background:#fff;color:#080b10}.controls .stop{background:#51131c;color:#fff}.controls .extra{display:inline-block}
-#prompt.running .promptTop{opacity:0;pointer-events:none}#prompt.running .controls .extra{display:inline-block}#prompt.running .controls{background:#090d14aa}
-@media(orientation:portrait){header{height:58px}.brand{font-size:13px}#editMode{height:calc(100dvh - 58px)}.toolbar{max-height:145px;overflow:auto}.library select{min-width:160px;flex:1}.library input{min-width:130px;flex:1}#editor{font-size:23px;padding:15px}.promptText{left:2%;right:2%}}
-@media(orientation:landscape){.toolbar{max-height:92px;overflow:auto}.promptText{left:3%;right:3%}}
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background: #07090d;
+  color: #fff;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button {
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+/* =========================
+   EDITOR
+   ========================= */
+
+header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: #0d1119;
+  border-bottom: 1px solid #293241;
+}
+
+.brand {
+  font-weight: 900;
+  letter-spacing: 1.4px;
+}
+
+.brand small {
+  display: block;
+  color: #9ba5b5;
+  font-size: 10px;
+  margin-top: 3px;
+}
+
+.mode {
+  font-weight: 800;
+  background: #18202d;
+  padding: 8px 11px;
+  border-radius: 20px;
+}
+
+#editMode {
+  height: calc(100% - 64px);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.toolbar {
+  padding: 9px;
+  background: #111722;
+  border-bottom: 1px solid #293241;
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.toolbar button,
+.toolbar select,
+.toolbar input {
+  height: 42px;
+  border: 1px solid #354155;
+  background: #1a2230;
+  color: #fff;
+  border-radius: 9px;
+  padding: 0 10px;
+}
+
+.toolbar button {
+  min-width: 44px;
+  font-weight: 800;
+}
+
+.toolbar .primary {
+  background: #fff;
+  color: #080b10;
+}
+
+.toolbar input[type="color"] {
+  width: 48px;
+  padding: 5px;
+}
+
+#editor {
+  margin: 10px;
+  padding: 24px;
+  overflow: auto;
+  background: #fff;
+  color: #111;
+  border-radius: 14px;
+  outline: none;
+  font-size: 28px;
+  line-height: 1.45;
+}
+
+.settings {
+  padding: 9px 12px;
+  background: #101620;
+  border-top: 1px solid #293241;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.setting {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #b2bdcc;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.setting input[type="range"] {
+  width: 145px;
+}
+
+.setting input[type="number"] {
+  width: 62px;
+  background: #192230;
+  color: #fff;
+  border: 1px solid #3a4659;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px;
+  background: #0d1119;
+}
+
+.actions button {
+  border: 0;
+  border-radius: 11px;
+  padding: 14px 20px;
+  font-weight: 900;
+}
+
+.save {
+  background: #1d2735;
+  color: #fff;
+}
+
+.open {
+  background: #fff;
+  color: #080b10;
+}
+
+/* =========================
+   TELEPROMPTER
+   ========================= */
+
+#prompt {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #050609;
+}
+
+.promptHeader {
+  position: absolute;
+  z-index: 70;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(#050609dd, transparent);
+}
+
+#status {
+  font-weight: 900;
+}
+
+.exit {
+  background: #171d27;
+  color: #fff;
+  border: 1px solid #3b4555;
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+
+#view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.guide {
+  position: absolute;
+  z-index: 55;
+  top: 48%;
+  left: 3%;
+  right: 3%;
+  height: 2px;
+  background: #ef233c99;
+}
+
+.promptText {
+  position: absolute;
+  top: 44%;
+  left: 7%;
+  right: 7%;
+  padding: 48vh 0 60vh;
+  text-align: center;
+  font-size: 64px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.promptText * {
+  max-width: 100%;
+}
+
+/* Mirror */
+.mirror .promptText {
+  transform: scaleX(-1);
+}
+
+/* Countdown */
+#count {
+  display: none;
+  position: absolute;
+  z-index: 100;
+  inset: 0;
+  background: #050609f5;
+  place-items: center;
+  font-size: min(42vw, 330px);
+  font-weight: 900;
+}
+
+#count.on {
+  display: grid;
+}
+
+/* Controls */
+.controls {
+  position: absolute;
+  z-index: 80;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: center;
+  background: #0d121bdd;
+  border: 1px solid #334054;
+  border-radius: 16px;
+  padding: 9px;
+}
+
+.controls button {
+  height: 49px;
+  min-width: 55px;
+  background: #192230;
+  color: #fff;
+  border: 1px solid #3d4a60;
+  border-radius: 10px;
+  font-weight: 900;
+}
+
+.controls .start {
+  background: #fff;
+  color: #080b10;
+}
+
+/* Bluetooth instructions */
+#btHelp {
+  position: absolute;
+  z-index: 81;
+  bottom: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0d121bdd;
+  border: 1px solid #334054;
+  border-radius: 10px;
+  padding: 7px 11px;
+  color: #c8d0dc;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  opacity: .9;
+}
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media(max-width:700px) {
+
+  #editor {
+    font-size: 22px;
+    margin: 7px;
+    padding: 16px;
+  }
+
+  .toolbar {
+    max-height: 155px;
+    overflow: auto;
+  }
+
+  .promptText {
+    font-size: 48px;
+    left: 5%;
+    right: 5%;
+  }
+
+  .brand {
+    font-size: 13px;
+  }
+
+  #btHelp {
+    bottom: 76px;
+    font-size: 10px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">
+    N1 • NEWS ONE PRODUCTION
+    <small>TABLET TELEPROMPTER STUDIO</small>
+  </div>
+
+  <div class="mode">
+    EDITOR
+  </div>
+</header>
 
 
-#prompt.view90,#prompt.view270{width:100vh;height:100vw;inset:auto;left:50%;top:50%;transform-origin:center center}
-#prompt.view90{transform:translate(-50%,-50%) rotate(90deg)}
-#prompt.view180{transform:rotate(180deg)}
-#prompt.view270{transform:translate(-50%,-50%) rotate(270deg)}
+<!-- =========================
+     SCRIPT EDITOR
+     ========================= -->
 
-#orientationDock{display:none;position:fixed;z-index:500;right:max(8px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);pointer-events:none}
-#orientationDock button{pointer-events:auto;width:58px;min-height:92px;padding:8px 5px;border:1px solid #59677c;border-radius:14px;background:#111923e8;color:#fff;font-weight:900;font-size:24px;box-shadow:0 2px 12px #0008}
-#orientationDock button span{display:block;font-size:9px;letter-spacing:.4px;margin-top:5px}
-body.promptOpen #orientationDock{display:block}
-
-.viewportControls{display:none!important;position:fixed!important;z-index:490!important;left:50%!important;bottom:max(8px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:auto!important;max-width:calc(100vw - 82px)!important;max-height:34vh!important;overflow:auto!important;flex-wrap:wrap!important;justify-content:center!important}
-body.promptOpen .viewportControls{display:flex!important}
-body.promptOpen #orientationDock{display:block!important}
-#prompt.running + .viewportControls .extra{display:none}
-@media(max-width:700px){.viewportControls{gap:5px!important;padding:6px!important}.viewportControls button{height:42px!important;min-width:58px!important;font-size:12px!important}}
-</style></head><body>
-<header><div class="brand">N1 • NEWS ONE PRODUCTION<small>TELEPROMPTER SCRIPT STUDIO</small></div><div class="badge">EDITOR</div></header>
 <section id="editMode">
-<div class="library"><b>SCRIPTS:</b><select id="scriptList"></select><input id="scriptName" placeholder="Script name"><button id="newScript">+ NEW</button><button id="saveScript">SAVE</button><button id="deleteScript">DELETE</button></div>
-<div class="toolbar"><button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="underline"><u>U</u></button><select id="font"><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Tahoma</option><option>Times New Roman</option></select><select id="editSize"><option value="20">20px</option><option value="24">24px</option><option value="28" selected>28px</option><option value="32">32px</option><option value="36">36px</option><option value="42">42px</option><option value="48">48px</option><option value="56">56px</option><option value="64">64px</option></select><input id="color" type="color" value="#111111"><button data-cmd="justifyLeft">LEFT</button><button data-cmd="justifyCenter">CENTER</button><button data-cmd="justifyRight">RIGHT</button><button data-cmd="insertUnorderedList">• LIST</button><button data-cmd="insertOrderedList">1. LIST</button><button id="clear">CLEAR</button></div>
-<div id="editorWrap"><div id="editor" contenteditable="true"><h2>News One Production</h2><p>Start your script here.</p></div></div>
-<div class="bottom"><div class="settings"><span class="setting">SPEED <input id="speed" type="range" min="5" max="180" value="45"><b id="speedV">45</b></span><span class="setting">READER SCALE <input id="scale" type="range" min="50" max="400" value="100"><b id="scaleV">100%</b></span><span class="setting">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span></div><div class="actions"><button id="saveBottom" class="save">SAVE CURRENT SCRIPT</button><button id="open" class="open">OPEN TELEPROMPTER ▶</button></div></div></section>
-<section id="prompt"><div class="promptTop"><div id="status">READY</div><button id="exit" class="exit">✕ EDITOR</button></div><div id="view"><div class="guide"></div><div id="promptText" class="promptText"></div><div id="count">5</div></div></section>
-<div class="controls viewportControls"><button id="restart">↺ RESTART</button><button id="start" class="start">▶ START</button><button id="resume">Ⅱ PAUSE</button><button id="stop" class="stop">■ STOP</button><button id="smaller">A−</button><button id="larger">A+</button><button id="slower">− SPEED</button><button id="faster">+ SPEED</button><button id="mirror">⇄ MIRROR</button><button id="full" class="extra">⛶</button></div>
-<div id="orientationDock"><button id="rotate">↻<span>ORIENT</span></button></div>
-<script>
-const $=id=>document.getElementById(id);let playing=false,last=0,offset=0,raf=0,ct=0,currentId=null;
-let wakeLock=null;
-async function keepAwake(){
-  try{
-    if('wakeLock' in navigator && !wakeLock){
-      wakeLock=await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release',()=>{wakeLock=null});
-    }
-  }catch(e){wakeLock=null}
-}
-async function allowSleep(){
-  try{if(wakeLock){await wakeLock.release();wakeLock=null}}catch(e){wakeLock=null}
-}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible' && document.body.classList.contains('promptOpen')) keepAwake()});
 
-function getLib(){try{return JSON.parse(localStorage.getItem('n1libraryV4')||'{}')}catch(e){return {}}}function setLib(x){localStorage.setItem('n1libraryV4',JSON.stringify(x))}
-function refreshList(selectId=currentId){let lib=getLib(),list=$('scriptList');list.innerHTML='';Object.keys(lib).sort((a,b)=>lib[b].updated-lib[a].updated).forEach(id=>{let o=document.createElement('option');o.value=id;o.textContent=lib[id].name;list.appendChild(o)});if(selectId&&lib[selectId])list.value=selectId}
-function saveCurrent(){let name=$('scriptName').value.trim()||'Untitled Script',lib=getLib();if(!currentId)currentId='s'+Date.now();lib[currentId]={name,html:$('editor').innerHTML,updated:Date.now()};setLib(lib);refreshList(currentId);persistSettings();return currentId}
-function loadScript(id){let x=getLib()[id];if(!x)return;currentId=id;$('scriptName').value=x.name;$('editor').innerHTML=x.html}
-function newScript(){currentId=null;$('scriptName').value='';$('editor').innerHTML='<h2>New Script</h2><p>Start writing here.</p>';$('scriptName').focus()}
-function deleteScript(){if(!currentId)return;let lib=getLib();delete lib[currentId];setLib(lib);currentId=null;refreshList();if($('scriptList').value)loadScript($('scriptList').value);else newScript()}
-function persistSettings(){localStorage.setItem('n1v4speed',$('speed').value);localStorage.setItem('n1v4scale',$('scale').value);localStorage.setItem('n1v4secs',$('secs').value)}
-function updateSpeed(){ $('speedV').textContent=$('speed').value; persistSettings(); }
-function updateScale(){ let v=+$('scale').value; $('scale').dataset.live=v; $('scaleV').textContent=v+'%'; localStorage.setItem('n1v5liveScale',v); persistSettings(); applyLiveScale(v); }
-function labels(){ $('speedV').textContent=$('speed').value; let v=parseInt($('scale').dataset.live||$('scale').value)||100; $('scaleV').textContent=v+'%'; persistSettings(); }
-function applyLiveScale(v){$('promptText').style.zoom=(v/100)}
-function applyScale(){updateScale()}
-function command(c,v=null){$('editor').focus();document.execCommand(c,false,v)}
-document.querySelectorAll('[data-cmd]').forEach(b=>b.onclick=()=>command(b.dataset.cmd));$('font').onchange=()=>command('fontName',$('font').value);$('color').onchange=()=>command('foreColor',$('color').value);$('clear').onclick=()=>command('removeFormat');
-$('editSize').onchange=()=>{let s=$('editSize').value;$('editor').focus();document.execCommand('fontSize',false,'7');document.querySelectorAll('#editor font[size="7"]').forEach(n=>{n.removeAttribute('size');n.style.fontSize=s+'px'})};
-$('scriptList').onchange=()=>loadScript($('scriptList').value);$('newScript').onclick=newScript;$('saveScript').onclick=saveCurrent;$('saveBottom').onclick=saveCurrent;$('deleteScript').onclick=deleteScript;
-$('speed').oninput=updateSpeed;$('scale').oninput=updateScale;$('secs').onchange=persistSettings;
-function openPrompt(){saveCurrent();$('promptText').innerHTML=$('editor').innerHTML;let v=parseInt(localStorage.getItem('n1v5liveScale')||$('scale').value)||100;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';applyLiveScale(v);$('prompt').style.display='block';document.body.classList.add('promptOpen');keepAwake();restart()}
-$('open').onclick=openPrompt;$('exit').onclick=()=>{stop();$('prompt').style.display='none';document.body.classList.remove('promptOpen');allowSleep()};
-function frame(t){if(!playing)return;if(!last)last=t;offset+=(t-last)/1000*+$('speed').value;last=t;$('promptText').style.top=`calc(44% - ${offset}px)`;raf=requestAnimationFrame(frame)}
-function play(){if(playing)return;keepAwake();playing=true;last=0;$('prompt').classList.add('running');$('status').textContent='● PROMPTING';$('resume').textContent='Ⅱ PAUSE';raf=requestAnimationFrame(frame)}
-function pause(){playing=false;last=0;cancelAnimationFrame(raf);$('status').textContent='PAUSED';$('resume').textContent='▶ RESUME'}
-function togglePause(){playing?pause():play()}
-function stop(){playing=false;last=0;cancelAnimationFrame(raf);clearInterval(ct);$('count').classList.remove('on');$('prompt').classList.remove('running');$('status').textContent='STOPPED';$('resume').textContent='▶ RESUME'}
-function restart(){stop();offset=0;$('promptText').style.top='44%';$('status').textContent='READY'}
-function start(){restart();let n=Math.max(0,Math.min(30,parseInt($('secs').value)||0));if(!n)return play();$('count').textContent=n;$('count').classList.add('on');$('status').textContent='COUNTDOWN';ct=setInterval(()=>{n--;$('count').textContent=n;if(n<=0){clearInterval(ct);$('count').classList.remove('on');play()}},1000)}
-$('start').onclick=start;$('resume').onclick=togglePause;$('stop').onclick=stop;$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+5);updateSpeed()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-5);updateSpeed()};$('larger').onclick=()=>{let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('smaller').onclick=()=>{let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('mirror').onclick=()=>document.body.classList.toggle('mirror');
-let viewRotation=0;
-function rotatePrompt(){
-  const p=$('prompt');
-  viewRotation=(viewRotation+90)%360;
-  p.classList.remove('view90','view180','view270');
-  if(viewRotation===90)p.classList.add('view90');
-  else if(viewRotation===180)p.classList.add('view180');
-  else if(viewRotation===270)p.classList.add('view270');
-  $('rotate').textContent='↻ '+viewRotation+'°';
+  <div class="toolbar">
+
+    <button data-cmd="bold"><b>B</b></button>
+    <button data-cmd="italic"><i>I</i></button>
+    <button data-cmd="underline"><u>U</u></button>
+
+    <select id="font">
+      <option>Arial</option>
+      <option>Verdana</option>
+      <option>Georgia</option>
+      <option>Tahoma</option>
+      <option>Times New Roman</option>
+    </select>
+
+    <select id="editSize">
+      <option value="20">20px</option>
+      <option value="24">24px</option>
+      <option value="28" selected>28px</option>
+      <option value="32">32px</option>
+      <option value="36">36px</option>
+      <option value="42">42px</option>
+      <option value="48">48px</option>
+      <option value="56">56px</option>
+      <option value="64">64px</option>
+      <option value="72">72px</option>
+    </select>
+
+    <input id="color" type="color" value="#111111">
+
+    <button data-cmd="justifyLeft">LEFT</button>
+    <button data-cmd="justifyCenter">CENTER</button>
+    <button data-cmd="justifyRight">RIGHT</button>
+
+    <button data-cmd="insertUnorderedList">
+      • LIST
+    </button>
+
+    <button id="clear">
+      CLEAR FORMAT
+    </button>
+
+  </div>
+
+
+  <div
+    id="editor"
+    contenteditable="true"
+  >
+    <h2>News One Production</h2>
+    <p>Paste your formatted script here.</p>
+  </div>
+
+
+  <div>
+
+    <div class="settings">
+
+      <span class="setting">
+        SCROLL SPEED
+        <input
+          id="speed"
+          type="range"
+          min="5"
+          max="180"
+          value="45"
+        >
+        <b id="speedV">45</b>
+      </span>
+
+
+      <span class="setting">
+        READING SIZE
+        <input
+          id="readSize"
+          type="range"
+          min="28"
+          max="140"
+          value="64"
+        >
+        <b id="sizeV">64px</b>
+      </span>
+
+
+      <span class="setting">
+        LINE SPACING
+        <input
+          id="line"
+          type="range"
+          min="10"
+          max="25"
+          value="14"
+        >
+        <b id="lineV">1.4</b>
+      </span>
+
+
+      <span class="setting">
+        COUNTDOWN
+        <input
+          id="secs"
+          type="number"
+          min="0"
+          max="30"
+          value="5"
+        >
+        sec
+      </span>
+
+    </div>
+
+
+    <div class="actions">
+
+      <button
+        id="save"
+        class="save"
+      >
+        SAVE SCRIPT
+      </button>
+
+      <button
+        id="open"
+        class="open"
+      >
+        OPEN TELEPROMPTER ▶
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     ACTIVE TELEPROMPTER
+     ========================= -->
+
+<section id="prompt">
+
+  <div class="promptHeader">
+
+    <div id="status">
+      READY
+    </div>
+
+    <button
+      id="exit"
+      class="exit"
+    >
+      ✕ EDITOR
+    </button>
+
+  </div>
+
+
+  <div id="view">
+
+    <div class="guide"></div>
+
+    <div
+      id="promptText"
+      class="promptText"
+    ></div>
+
+    <div id="count">
+      5
+    </div>
+
+  </div>
+
+
+  <div id="btHelp">
+    BLUETOOTH:
+    ▶ Play/Pause •
+    ↑/↓ Speed •
+    ←/→ Move
+  </div>
+
+
+  <div class="controls">
+
+    <button id="restart">
+      ↺
+    </button>
+
+    <button id="slower">
+      − SPEED
+    </button>
+
+    <button
+      id="start"
+      class="start"
+    >
+      ▶ START
+    </button>
+
+    <button id="pause">
+      Ⅱ
+    </button>
+
+    <button id="faster">
+      + SPEED
+    </button>
+
+    <button id="smaller">
+      A−
+    </button>
+
+    <button id="larger">
+      A+
+    </button>
+
+    <button id="mirror">
+      ⇄
+    </button>
+
+    <button id="full">
+      ⛶
+    </button>
+
+  </div>
+
+</section>
+
+
+<script>
+
+/* =====================================================
+   BASIC ELEMENT HELPER
+   ===================================================== */
+
+const $ = id => document.getElementById(id);
+
+
+/* =====================================================
+   TELEPROMPTER STATE
+   ===================================================== */
+
+let playing = false;
+let last = 0;
+let offset = 0;
+let raf = 0;
+let ct = 0;
+
+
+/* =====================================================
+   SAVE SETTINGS
+   ===================================================== */
+
+function persist() {
+
+  localStorage.setItem(
+    'n1html',
+    $('editor').innerHTML
+  );
+
+  localStorage.setItem(
+    'n1speed',
+    $('speed').value
+  );
+
+  localStorage.setItem(
+    'n1size',
+    $('readSize').value
+  );
+
+  localStorage.setItem(
+    'n1line',
+    $('line').value
+  );
+
+  localStorage.setItem(
+    'n1secs',
+    $('secs').value
+  );
 }
-$('rotate').onclick=rotatePrompt;
-$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
-$('speed').value=localStorage.getItem('n1v4speed')||45;$('scale').value=localStorage.getItem('n1v4scale')||100;$('secs').value=localStorage.getItem('n1v4secs')||5;labels();
-let lib=getLib();if(!Object.keys(lib).length){let old=localStorage.getItem('n1v3html')||localStorage.getItem('n1html');currentId='welcome';lib[currentId]={name:'My First Script',html:old||$('editor').innerHTML,updated:Date.now()};setLib(lib)}refreshList();if($('scriptList').value)loadScript($('scriptList').value);
-if('serviceWorker'in navigator&&location.protocol!=='file:')window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
-</script></body></html>
+
+
+/* =====================================================
+   UPDATE SETTINGS
+   ===================================================== */
+
+function updateLabels() {
+
+  $('speedV').textContent =
+    $('speed').value;
+
+  $('sizeV').textContent =
+    $('readSize').value + 'px';
+
+  $('lineV').textContent =
+    (+$('line').value / 10).toFixed(1);
+
+  persist();
+
+  applyPromptStyle();
+}
+
+
+/* =====================================================
+   APPLY READING STYLE
+   ===================================================== */
+
+function applyPromptStyle() {
+
+  $('promptText').style.fontSize =
+    $('readSize').value + 'px';
+
+  $('promptText').style.lineHeight =
+    (+$('line').value / 10);
+}
+
+
+/* =====================================================
+   EDITOR FORMATTING
+   ===================================================== */
+
+function command(c, v = null) {
+
+  $('editor').focus();
+
+  document.execCommand(
+    c,
+    false,
+    v
+  );
+
+  persist();
+}
+
+
+document
+  .querySelectorAll('[data-cmd]')
+  .forEach(button => {
+
+    button.onclick = () =>
+      command(button.dataset.cmd);
+
+  });
+
+
+$('font').onchange = () => {
+
+  command(
+    'fontName',
+    $('font').value
+  );
+
+};
+
+
+$('color').onchange = () => {
+
+  command(
+    'foreColor',
+    $('color').value
+  );
+
+};
+
+
+$('clear').onclick = () =>
+  command('removeFormat');
+
+
+/* =====================================================
+   EDITOR FONT SIZE
+   ===================================================== */
+
+$('editSize').onchange = () => {
+
+  let s = $('editSize').value;
+
+  $('editor').focus();
+
+  let sel = window.getSelection();
+
+  if (!sel.rangeCount)
+    return;
+
+  let r = sel.getRangeAt(0);
+
+  if (r.collapsed) {
+
+    document.execCommand(
+      'fontSize',
+      false,
+      '7'
+    );
+
+    document
+      .querySelectorAll(
+        '#editor font[size="7"]'
+      )
+      .forEach(n => {
+
+        n.removeAttribute('size');
+
+        n.style.fontSize =
+          s + 'px';
+
+      });
+
+  } else {
+
+    let span =
+      document.createElement('span');
+
+    span.style.fontSize =
+      s + 'px';
+
+    try {
+
+      r.surroundContents(span);
+
+    } catch (e) {
+
+      document.execCommand(
+        'fontSize',
+        false,
+        '7'
+      );
+
+      document
+        .querySelectorAll(
+          '#editor font[size="7"]'
+        )
+        .forEach(n => {
+
+          n.removeAttribute('size');
+
+          n.style.fontSize =
+            s + 'px';
+
+        });
+
+    }
+
+  }
+
+  persist();
+
+};
+
+
+/* =====================================================
+   EDITOR AUTO SAVE
+   ===================================================== */
+
+$('editor').addEventListener(
+  'input',
+  persist
+);
+
+
+/* =====================================================
+   SETTINGS EVENTS
+   ===================================================== */
+
+$('speed').oninput =
+  updateLabels;
+
+$('readSize').oninput =
+  updateLabels;
+
+$('line').oninput =
+  updateLabels;
+
+$('secs').onchange =
+  persist;
+
+
+/* =====================================================
+   SAVE SCRIPT
+   ===================================================== */
+
+$('save').onclick = () => {
+
+  persist();
+
+  alert(
+    'Script saved on this tablet.'
+  );
+
+};
+
+
+/* =====================================================
+   OPEN TELEPROMPTER
+   ===================================================== */
+
+function openPrompt() {
+
+  persist();
+
+  $('promptText').innerHTML =
+    $('editor').innerHTML;
+
+  applyPromptStyle();
+
+  $('prompt').style.display =
+    'block';
+
+  restart();
+
+}
+
+
+$('open').onclick =
+  openPrompt;
+
+
+/* =====================================================
+   EXIT EDITOR
+   ===================================================== */
+
+$('exit').onclick = () => {
+
+  pause();
+
+  clearInterval(ct);
+
+  $('count').classList.remove('on');
+
+  $('prompt').style.display =
+    'none';
+
+};
+
+
+/* =====================================================
+   SCROLL ENGINE
+   ===================================================== */
+
+function frame(t) {
+
+  if (!playing)
+    return;
+
+  if (!last)
+    last = t;
+
+  offset +=
+    (t - last) / 1000 *
+    +$('speed').value;
+
+  last = t;
+
+  $('promptText').style.top =
+    `calc(44% - ${offset}px)`;
+
+  raf =
+    requestAnimationFrame(frame);
+
+}
+
+
+/* =====================================================
+   PLAY
+   ===================================================== */
+
+function play() {
+
+  if (playing)
+    return;
+
+  playing = true;
+
+  last = 0;
+
+  $('status').textContent =
+    '● PROMPTING';
+
+  $('status').style.color =
+    '#ff4358';
+
+  raf =
+    requestAnimationFrame(frame);
+
+}
+
+
+/* =====================================================
+   PAUSE
+   ===================================================== */
+
+function pause() {
+
+  playing = false;
+
+  last = 0;
+
+  cancelAnimationFrame(raf);
+
+  $('status').textContent =
+    'PAUSED';
+
+  $('status').style.color =
+    '#fff';
+
+}
+
+
+/* =====================================================
+   RESTART
+   ===================================================== */
+
+function restart() {
+
+  pause();
+
+  offset = 0;
+
+  $('promptText').style.top =
+    '44%';
+
+  $('status').textContent =
+    'READY';
+
+}
+
+
+/* =====================================================
+   COUNTDOWN
+   ===================================================== */
+
+function start() {
+
+  restart();
+
+  let n =
+    Math.max(
+      0,
+      Math.min(
+        30,
+        parseInt(
+          $('secs').value
+        ) || 0
+      )
+    );
+
+
+  if (!n) {
+
+    play();
+
+    return;
+
+  }
+
+
+  $('count').textContent =
+    n;
+
+  $('count').classList.add(
+    'on'
+  );
+
+  $('status').textContent =
+    'COUNTDOWN';
+
+
+  clearInterval(ct);
+
+
+  ct =
+    setInterval(() => {
+
+      n--;
+
+      $('count').textContent =
+        n;
+
+
+      if (n <= 0) {
+
+        clearInterval(ct);
+
+        $('count')
+          .classList
+          .remove('on');
+
+        /*
+         IMPORTANT:
+         Start scrolling immediately
+         when countdown reaches zero.
+        */
+
+        play();
+
+      }
+
+    }, 1000);
+
+}
+
+
+/* =====================================================
+   ON-SCREEN CONTROLS
+   ===================================================== */
+
+$('start').onclick =
+  start;
+
+
+$('pause').onclick = () => {
+
+  if (playing)
+    pause();
+  else
+    play();
+
+};
+
+
+$('restart').onclick =
+  restart;
+
+
+$('faster').onclick = () => {
+
+  $('speed').value =
+    Math.min(
+      180,
+      +$('speed').value + 5
+    );
+
+  updateLabels();
+
+};
+
+
+$('slower').onclick = () => {
+
+  $('speed').value =
+    Math.max(
+      5,
+      +$('speed').value - 5
+    );
+
+  updateLabels();
+
+};
+
+
+$('larger').onclick = () => {
+
+  $('readSize').value =
+    Math.min(
+      140,
+      +$('readSize').value + 6
+    );
+
+  updateLabels();
+
+};
+
+
+$('smaller').onclick = () => {
+
+  $('readSize').value =
+    Math.max(
+      28,
+      +$('readSize').value - 6
+    );
+
+  updateLabels();
+
+};
+
+
+$('mirror').onclick = () => {
+
+  document.body.classList.toggle(
+    'mirror'
+  );
+
+};
+
+
+$('full').onclick = () => {
+
+  if (document.fullscreenElement)
+
+    document.exitFullscreen();
+
+  else
+
+    document
+      .documentElement
+      .requestFullscreen();
+
+};
+
+
+/* =====================================================
+   BLUETOOTH KEYBOARD / REMOTE CONTROLS
+   =====================================================
+
+   ↑ = increase speed
+   ↓ = decrease speed
+
+   ← = move backward
+   → = move forward
+
+   Play/Pause = play/pause
+
+   Space = play/pause
+   Enter = play/pause
+
+   Home = restart
+
+   + = increase font
+   - = decrease font
+*/
+
+
+function keyboardControl(e) {
+
+  /*
+   Only operate while the
+   active teleprompter is open.
+  */
+
+  if (
+    $('prompt').style.display !==
+    'block'
+  ) {
+
+    return;
+
+  }
+
+
+  /*
+   Do not interfere with
+   editable controls.
+  */
+
+  if (
+    document.activeElement &&
+    [
+      'INPUT',
+      'SELECT',
+      'TEXTAREA'
+    ].includes(
+      document.activeElement.tagName
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  const k =
+    e.key;
+
+  const code =
+    e.code;
+
+
+  /* =========================
+     ARROW UP
+     INCREASE SPEED
+     ========================= */
+
+  if (
+    k === 'ArrowUp'
+  ) {
+
+    e.preventDefault();
+
+    $('speed').value =
+      Math.min(
+        180,
+        +$('speed').value + 5
+      );
+
+    updateLabels();
+
+    return;
+
+  }
+
+
+  /* =========================
+     ARROW DOWN
+     DECREASE SPEED
+     ========================= */
+
+  if (
+    k === 'ArrowDown'
+  ) {
+
+    e.preventDefault();
+
+    $('speed').value =
+      Math.max(
+        5,
+        +$('speed').value - 5
+      );
+
+    updateLabels();
+
+    return;
+
+  }
+
+
+  /* =========================
+     ARROW LEFT
+     MOVE BACKWARD
+     ========================= */
+
+  if (
+    k === 'ArrowLeft'
+  ) {
+
+    e.preventDefault();
+
+    offset =
+      Math.max(
+        0,
+        offset - 360
+      );
+
+    $('promptText').style.top =
+      `calc(44% - ${offset}px)`;
+
+    return;
+
+  }
+
+
+  /* =========================
+     ARROW RIGHT
+     MOVE FORWARD
+     ========================= */
+
+  if (
+    k === 'ArrowRight'
+  ) {
+
+    e.preventDefault();
+
+    offset += 360;
+
+    $('promptText').style.top =
+      `calc(44% - ${offset}px)`;
+
+    return;
+
+  }
+
+
+  /* =========================
+     PLAY / PAUSE
+     ========================= */
+
+  if (
+    k === ' ' ||
+    k === 'Enter' ||
+    k === 'MediaPlayPause' ||
+    code === 'MediaPlayPause'
+  ) {
+
+    e.preventDefault();
+
+    if (playing)
+
+      pause();
+
+    else
+
+      play();
+
+    return;
+
+  }
+
+
+  /* =========================
+     RESTART
+     ========================= */
+
+  if (
+    k === 'Home'
+  ) {
+
+    e.preventDefault();
+
+    restart();
+
+    return;
+
+  }
+
+
+  /* =========================
+     FONT SIZE UP
+     ========================= */
+
+  if (
+    k === '+' ||
+    k === '='
+  ) {
+
+    e.preventDefault();
+
+    $('readSize').value =
+      Math.min(
+        140,
+        +$('readSize').value + 6
+      );
+
+    updateLabels();
+
+    return;
+
+  }
+
+
+  /* =========================
+     FONT SIZE DOWN
+     ========================= */
+
+  if (
+    k === '-' ||
+    k === '_'
+  ) {
+
+    e.preventDefault();
+
+    $('readSize').value =
+      Math.max(
+        28,
+        +$('readSize').value - 6
+      );
+
+    updateLabels();
+
+  }
+
+}
+
+
+/* =====================================================
+   LISTEN FOR BLUETOOTH KEYBOARD
+   ===================================================== */
+
+document.addEventListener(
+  'keydown',
+  keyboardControl
+);
+
+
+/* =====================================================
+   LOAD SAVED SETTINGS
+   ===================================================== */
+
+let h =
+  localStorage.getItem(
+    'n1html'
+  );
+
+if (h)
+
+  $('editor').innerHTML =
+    h;
+
+
+$('speed').value =
+  localStorage.getItem(
+    'n1speed'
+  ) || 45;
+
+
+$('readSize').value =
+  localStorage.getItem(
+    'n1size'
+  ) || 64;
+
+
+$('line').value =
+  localStorage.getItem(
+    'n1line'
+  ) || 14;
+
+
+$('secs').value =
+  localStorage.getItem(
+    'n1secs'
+  ) || 5;
+
+
+updateLabels();
+
+
+/* =====================================================
+   SERVICE WORKER
+   ===================================================== */
+
+if (
+  'serviceWorker' in navigator &&
+  location.protocol !== 'file:'
+) {
+
+  window.addEventListener(
+    'load',
+    () => {
+
+      navigator.serviceWorker
+        .register(
+          './service-worker.js'
+        );
+
+    }
+  );
+
+}
+
+</script>
+
+</body>
+</html>
