@@ -35,9 +35,10 @@ body.promptOpen #promptControls .runningControls{display:none}
 #runningStack{display:none;position:fixed;z-index:506;right:max(10px,env(safe-area-inset-right));top:calc(82px + 58px);flex-direction:column;gap:7px}
 #runningStack button{width:48px;height:48px;border:1px solid #59677c;border-radius:10px;background:#111923e8;color:#fff;font-weight:900;font-size:18px;box-shadow:0 3px 12px #0008}
 #runningStack button.stop{color:#fff}
+body.promptOpen #promptControls.running{display:none !important}
 body.promptOpen #runningStack.running{display:flex}
 body.promptOpen #speedMeter{display:flex}
-body.promptOpen #speedMeter.running{display:none}
+body.promptOpen #speedMeter.running{display:none !important}
 #speedMeter{display:none;position:fixed;z-index:505;right:max(10px,env(safe-area-inset-right));top:82px;width:66px;padding:8px 6px;border:1px solid #59677c;border-radius:12px;background:#101720e8;color:#fff;align-items:center;flex-direction:column;gap:5px;box-shadow:0 4px 16px #0008}
 #speedMeter .speedMeterTitle{font-size:9px;font-weight:900;letter-spacing:.7px}
 #speedMeter .speedValue{font-size:16px;font-weight:900;line-height:1}
@@ -53,6 +54,27 @@ body.promptOpen .viewportControls{display:flex!important}
 body.promptOpen #orientationDock{display:block!important}
 #prompt.running + .viewportControls .extra{display:none}
 @media(max-width:700px){.viewportControls{gap:5px!important;padding:6px!important}.viewportControls button{height:42px!important;min-width:58px!important;font-size:12px!important}}
+
+/* CLEAN READING MODE — only Pause/Stop remain visible */
+body.promptOpen #promptControls.running,
+body.promptOpen #promptControls.running .fullControls,
+body.promptOpen #promptControls.running button,
+body.promptOpen #speedMeter.running {
+  display: none !important;
+}
+
+body.promptOpen #runningStack.running {
+  display: flex !important;
+}
+
+/* Final clean-reading override */
+body.cleanReading #promptControls,
+body.cleanReading #speedMeter {
+  display: none !important;
+}
+body.cleanReading #runningStack {
+  display: flex !important;
+}
 </style></head><body>
 <header><div class="brand">N1 • NEWS ONE PRODUCTION<small>TELEPROMPTER SCRIPT STUDIO</small></div><div class="badge">EDITOR</div></header>
 <section id="editMode">
@@ -77,7 +99,7 @@ body.promptOpen #orientationDock{display:block!important}
   </div>
 </div>
 
-<div id="runningStack">
+<div id="runningStack" style="display:none">
   <button id="runningResume" title="Pause / Resume">Ⅱ</button>
   <button id="runningStop" class="stop" title="Stop">■</button>
 </div>
@@ -149,20 +171,27 @@ $('scale').oninput=updateScale;$('secs').onchange=persistSettings;
 function openPrompt(){exactSpeed();saveExactSpeed();syncPromptSpeed();saveCurrent();$('promptText').innerHTML=$('editor').innerHTML;let v=parseInt(localStorage.getItem('n1v5liveScale')||$('scale').value)||100;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';applyLiveScale(v);$('prompt').style.display='block';document.body.classList.add('promptOpen');setPromptControlMode(false);keepAwake();restart()}
 $('open').onclick=openPrompt;$('exit').onclick=()=>{stop();$('prompt').style.display='none';document.body.classList.remove('promptOpen');allowSleep()};
 function frame(t){if(!playing)return;if(!last)last=t;offset+=(t-last)/1000*+$('speed').value;last=t;$('promptText').style.top=`calc(44% - ${offset}px)`;raf=requestAnimationFrame(frame)}
-function play(){if(playing)return;setPromptControlMode(true);keepAwake();playing=true;last=0;$('prompt').classList.add('running');$('status').textContent='● PROMPTING';$('resume').textContent='Ⅱ PAUSE';raf=requestAnimationFrame(frame)}
-function pause(){playing=false;last=0;cancelAnimationFrame(raf);setPromptControlMode(false);$('status').textContent='PAUSED';$('resume').textContent='▶ RESUME'}
+function play(){if(playing)return;setPromptControlMode(true);document.body.classList.add('cleanReading');keepAwake();playing=true;last=0;$('prompt').classList.add('running');$('status').textContent='● PROMPTING';$('resume').textContent='Ⅱ PAUSE';raf=requestAnimationFrame(frame)}
+function pause(){playing=false;last=0;cancelAnimationFrame(raf);setPromptControlMode(false);document.body.classList.remove('cleanReading');$('status').textContent='PAUSED';$('resume').textContent='▶ RESUME'}
 function togglePause(){playing?pause():play()}
-function stop(){playing=false;last=0;cancelAnimationFrame(raf);clearInterval(ct);setPromptControlMode(false);$('count').classList.remove('on');$('prompt').classList.remove('running');$('status').textContent='STOPPED';$('resume').textContent='▶ RESUME'}
+function stop(){playing=false;last=0;cancelAnimationFrame(raf);clearInterval(ct);setPromptControlMode(false);document.body.classList.remove('cleanReading');$('count').classList.remove('on');$('prompt').classList.remove('running');$('status').textContent='STOPPED';$('resume').textContent='▶ RESUME'}
 function restart(){stop();offset=0;setPromptControlMode(false);$('promptText').style.top='44%';$('status').textContent='READY'}
 function start(){restart();let n=Math.max(0,Math.min(30,parseInt($('secs').value)||0));if(!n)return play();$('count').textContent=n;$('count').classList.add('on');$('status').textContent='COUNTDOWN';ct=setInterval(()=>{n--;$('count').textContent=n;if(n<=0){clearInterval(ct);$('count').classList.remove('on');play()}},1000)}
 
 function setPromptControlMode(running){
   const bar=$('promptControls');
-  if(bar) bar.classList.toggle('running',!!running);
   const stack=$('runningStack');
-  if(stack) stack.classList.toggle('running',!!running);
   const meter=$('speedMeter');
-  if(meter) meter.classList.toggle('running',!!running);
+
+  if(running){
+    if(bar) bar.style.setProperty('display','none','important');
+    if(meter) meter.style.setProperty('display','none','important');
+    if(stack) stack.style.setProperty('display','flex','important');
+  }else{
+    if(bar) bar.style.removeProperty('display');
+    if(meter) meter.style.removeProperty('display');
+    if(stack) stack.style.setProperty('display','none','important');
+  }
 }
 
 $('start').onclick=start;
