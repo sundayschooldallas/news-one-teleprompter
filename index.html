@@ -1,0 +1,249 @@
+<!doctype html><html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b10"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><title>News One Production Teleprompter</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#07090d;color:#fff;font-family:Arial,sans-serif}button,select,input{font:inherit}button{touch-action:manipulation}
+header{height:62px;display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:#0d1119;border-bottom:1px solid #293241}.brand{font-weight:900;letter-spacing:1.2px}.brand small{display:block;color:#9ba5b5;font-size:10px;margin-top:3px}.badge{background:#18202d;padding:8px 11px;border-radius:20px;font-weight:800}
+#editMode{height:calc(100dvh - 62px);display:grid;grid-template-rows:auto auto minmax(0,1fr) auto}.library{padding:8px 10px;background:#0b1018;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #293241}.library select,.library input,.library button,.toolbar button,.toolbar select,.toolbar input{height:40px;border:1px solid #354155;background:#192230;color:#fff;border-radius:9px;padding:0 10px}.library select{min-width:220px}.library input{min-width:180px}.library button,.toolbar button{font-weight:800}
+.toolbar{padding:8px 10px;background:#111722;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #293241}.toolbar input[type=color]{width:46px;padding:5px}
+#editorWrap{min-height:0;overflow:auto;padding:9px}#editor{min-height:100%;padding:22px;background:#fff;color:#111;border-radius:12px;outline:none;font-size:28px;line-height:normal;overflow-wrap:anywhere}
+.bottom{background:#0d1119}.settings{padding:8px 10px;display:flex;gap:13px;flex-wrap:wrap;justify-content:center;align-items:center;border-top:1px solid #293241}.setting{display:flex;align-items:center;gap:6px;color:#b2bdcc;font-size:12px;font-weight:800}.setting input[type=range]{width:130px}.setting input[type=number]{width:60px;background:#192230;color:#fff;border:1px solid #3a4659;border-radius:8px;padding:7px}.actions{display:flex;justify-content:center;gap:8px;padding:9px}.actions button{border:0;border-radius:11px;padding:13px 18px;font-weight:900}.save{background:#1d2735;color:#fff}.open{background:#fff;color:#080b10}
+#prompt{display:none;position:fixed;inset:0;background:#050609;z-index:50}#view{position:absolute;inset:0;overflow:hidden}.guide{position:absolute;z-index:55;top:48%;left:1.5%;right:1.5%;height:2px;background:#ef233c88}
+.promptText{position:absolute;top:44%;left:2.5%;right:2.5%;padding:0 0 55vh;overflow-wrap:anywhere}
+.promptText img{max-width:100%;height:auto}.mirror .promptText{transform:scaleX(-1)}
+#count{display:none;position:absolute;z-index:100;inset:0;background:#050609f5;place-items:center;font-size:min(42vw,330px);font-weight:900}#count.on{display:grid}
+.promptTop{position:absolute;z-index:70;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:9px 12px;background:linear-gradient(#050609dd,transparent)}#status{font-weight:900}.exit{background:#171d27;color:#fff;border:1px solid #3b4555;border-radius:10px;padding:9px 12px}
+.controls{position:absolute;z-index:80;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;max-width:92%;gap:8px;background:#0d121bdd;border:1px solid #334054;border-radius:15px;padding:8px}.controls button{height:50px;min-width:74px;background:#192230;color:#fff;border:1px solid #3d4a60;border-radius:10px;font-weight:900}.controls .start{background:#fff;color:#080b10}.controls .stop{background:#51131c;color:#fff}.controls .extra{display:inline-block}
+#prompt.running .promptTop{opacity:0;pointer-events:none}#prompt.running .controls .extra{display:inline-block}#prompt.running .controls{background:#090d14aa}
+@media(orientation:portrait){header{height:58px}.brand{font-size:13px}#editMode{height:calc(100dvh - 58px)}.toolbar{max-height:145px;overflow:auto}.library select{min-width:160px;flex:1}.library input{min-width:130px;flex:1}#editor{font-size:23px;padding:15px}.promptText{left:2%;right:2%}}
+@media(orientation:landscape){.toolbar{max-height:92px;overflow:auto}.promptText{left:3%;right:3%}}
+
+
+#prompt.view90,#prompt.view270{width:100vh;height:100vw;inset:auto;left:50%;top:50%;transform-origin:center center}
+#prompt.view90{transform:translate(-50%,-50%) rotate(90deg)}
+#prompt.view180{transform:rotate(180deg)}
+#prompt.view270{transform:translate(-50%,-50%) rotate(270deg)}
+
+#orientationDock{display:none;position:fixed;z-index:500;right:max(8px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);pointer-events:none}
+#orientationDock button{pointer-events:auto;width:58px;min-height:92px;padding:8px 5px;border:1px solid #59677c;border-radius:14px;background:#111923e8;color:#fff;font-weight:900;font-size:24px;box-shadow:0 2px 12px #0008}
+#orientationDock button span{display:block;font-size:9px;letter-spacing:.4px;margin-top:5px}
+body.promptOpen #orientationDock{display:block}
+#btStatus{display:none;position:fixed;z-index:501;right:max(8px,env(safe-area-inset-right));top:calc(50% + 58px);transform:translateY(-50%);max-width:210px;padding:7px 9px;border:1px solid #59677c;border-radius:10px;background:#111923e8;color:#d8e0eb;font-size:9px;line-height:1.25;font-weight:800;text-align:center}
+body.promptOpen #btStatus{display:block}
+@media(max-width:700px){#btStatus{font-size:8px;max-width:155px}}
+
+.viewportControls{display:none!important;position:fixed!important;z-index:490!important;left:50%!important;bottom:max(8px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:auto!important;max-width:calc(100vw - 82px)!important;max-height:34vh!important;overflow:auto!important;flex-wrap:wrap!important;justify-content:center!important}
+body.promptOpen .viewportControls{display:flex!important}
+body.promptOpen #orientationDock{display:block!important}
+#prompt.running + .viewportControls .extra{display:none}
+@media(max-width:700px){.viewportControls{gap:5px!important;padding:6px!important}.viewportControls button{height:42px!important;min-width:58px!important;font-size:12px!important}}
+</style></head><body>
+<header><div class="brand">N1 • NEWS ONE PRODUCTION<small>TELEPROMPTER SCRIPT STUDIO</small></div><div class="badge">EDITOR</div></header>
+<section id="editMode">
+<div class="library"><b>SCRIPTS:</b><select id="scriptList"></select><input id="scriptName" placeholder="Script name"><button id="newScript">+ NEW</button><button id="saveScript">SAVE</button><button id="deleteScript">DELETE</button></div>
+<div class="toolbar"><button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="underline"><u>U</u></button><select id="font"><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Tahoma</option><option>Times New Roman</option></select><select id="editSize"><option value="20">20px</option><option value="24">24px</option><option value="28" selected>28px</option><option value="32">32px</option><option value="36">36px</option><option value="42">42px</option><option value="48">48px</option><option value="56">56px</option><option value="64">64px</option></select><input id="color" type="color" value="#111111"><button data-cmd="justifyLeft">LEFT</button><button data-cmd="justifyCenter">CENTER</button><button data-cmd="justifyRight">RIGHT</button><button data-cmd="insertUnorderedList">• LIST</button><button data-cmd="insertOrderedList">1. LIST</button><button id="clear">CLEAR</button></div>
+<div id="editorWrap"><div id="editor" contenteditable="true"><h2>News One Production</h2><p>Start your script here.</p></div></div>
+<div class="bottom"><div class="settings"><span class="setting">SPEED <input id="speed" type="range" min="5" max="180" value="45"><b id="speedV">45</b></span><span class="setting">READER SCALE <input id="scale" type="range" min="50" max="400" value="100"><b id="scaleV">100%</b></span><span class="setting">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span></div><div class="actions"><button id="saveBottom" class="save">SAVE CURRENT SCRIPT</button><button id="open" class="open">OPEN TELEPROMPTER ▶</button></div></div></section>
+<section id="prompt"><div class="promptTop"><div id="status">READY</div><button id="exit" class="exit">✕ EDITOR</button></div><div id="view"><div class="guide"></div><div id="promptText" class="promptText"></div><div id="count">5</div></div></section>
+<div class="controls viewportControls"><button id="restart">↺ RESTART</button><button id="start" class="start">▶ START</button><button id="resume">Ⅱ PAUSE</button><button id="stop" class="stop">■ STOP</button><button id="smaller">A−</button><button id="larger">A+</button><button id="slower">− SPEED</button><button id="faster">+ SPEED</button><button id="mirror">⇄ MIRROR</button><button id="full" class="extra">⛶</button></div>
+<div id="orientationDock"><button id="rotate">↻<span>ORIENT</span></button></div>
+<div id="btStatus">BT KEYS: ↑↓ SPEED • ←→ MOVE • SPACE/PLAY PAUSE</div>
+<script>
+const $=id=>document.getElementById(id);let playing=false,last=0,offset=0,raf=0,ct=0,currentId=null;
+let wakeLock=null;
+async function keepAwake(){
+  try{
+    if('wakeLock' in navigator && !wakeLock){
+      wakeLock=await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release',()=>{wakeLock=null});
+    }
+  }catch(e){wakeLock=null}
+}
+async function allowSleep(){
+  try{if(wakeLock){await wakeLock.release();wakeLock=null}}catch(e){wakeLock=null}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible' && document.body.classList.contains('promptOpen')) keepAwake()});
+
+function getLib(){try{return JSON.parse(localStorage.getItem('n1libraryV4')||'{}')}catch(e){return {}}}function setLib(x){localStorage.setItem('n1libraryV4',JSON.stringify(x))}
+function refreshList(selectId=currentId){let lib=getLib(),list=$('scriptList');list.innerHTML='';Object.keys(lib).sort((a,b)=>lib[b].updated-lib[a].updated).forEach(id=>{let o=document.createElement('option');o.value=id;o.textContent=lib[id].name;list.appendChild(o)});if(selectId&&lib[selectId])list.value=selectId}
+function saveCurrent(){let name=$('scriptName').value.trim()||'Untitled Script',lib=getLib();if(!currentId)currentId='s'+Date.now();lib[currentId]={name,html:$('editor').innerHTML,updated:Date.now()};setLib(lib);refreshList(currentId);persistSettings();return currentId}
+function loadScript(id){let x=getLib()[id];if(!x)return;currentId=id;$('scriptName').value=x.name;$('editor').innerHTML=x.html}
+function newScript(){currentId=null;$('scriptName').value='';$('editor').innerHTML='<h2>New Script</h2><p>Start writing here.</p>';$('scriptName').focus()}
+function deleteScript(){if(!currentId)return;let lib=getLib();delete lib[currentId];setLib(lib);currentId=null;refreshList();if($('scriptList').value)loadScript($('scriptList').value);else newScript()}
+function persistSettings(){localStorage.setItem('n1v4speed',$('speed').value);localStorage.setItem('n1v4scale',$('scale').value);localStorage.setItem('n1v4secs',$('secs').value)}
+function updateSpeed(){ $('speedV').textContent=$('speed').value; persistSettings(); }
+function updateScale(){ let v=+$('scale').value; $('scale').dataset.live=v; $('scaleV').textContent=v+'%'; localStorage.setItem('n1v5liveScale',v); persistSettings(); applyLiveScale(v); }
+function labels(){ $('speedV').textContent=$('speed').value; let v=parseInt($('scale').dataset.live||$('scale').value)||100; $('scaleV').textContent=v+'%'; persistSettings(); }
+function applyLiveScale(v){$('promptText').style.zoom=(v/100)}
+function applyScale(){updateScale()}
+function command(c,v=null){$('editor').focus();document.execCommand(c,false,v)}
+document.querySelectorAll('[data-cmd]').forEach(b=>b.onclick=()=>command(b.dataset.cmd));$('font').onchange=()=>command('fontName',$('font').value);$('color').onchange=()=>command('foreColor',$('color').value);$('clear').onclick=()=>command('removeFormat');
+$('editSize').onchange=()=>{let s=$('editSize').value;$('editor').focus();document.execCommand('fontSize',false,'7');document.querySelectorAll('#editor font[size="7"]').forEach(n=>{n.removeAttribute('size');n.style.fontSize=s+'px'})};
+$('scriptList').onchange=()=>loadScript($('scriptList').value);$('newScript').onclick=newScript;$('saveScript').onclick=saveCurrent;$('saveBottom').onclick=saveCurrent;$('deleteScript').onclick=deleteScript;
+$('speed').oninput=updateSpeed;$('scale').oninput=updateScale;$('secs').onchange=persistSettings;
+function openPrompt(){saveCurrent();$('promptText').innerHTML=$('editor').innerHTML;let v=parseInt(localStorage.getItem('n1v5liveScale')||$('scale').value)||100;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';applyLiveScale(v);$('prompt').style.display='block';document.body.classList.add('promptOpen');keepAwake();restart()}
+$('open').onclick=openPrompt;$('exit').onclick=()=>{stop();$('prompt').style.display='none';document.body.classList.remove('promptOpen');allowSleep()};
+function frame(t){if(!playing)return;if(!last)last=t;offset+=(t-last)/1000*+$('speed').value;last=t;$('promptText').style.top=`calc(44% - ${offset}px)`;raf=requestAnimationFrame(frame)}
+function play(){if(playing)return;keepAwake();playing=true;last=0;$('prompt').classList.add('running');$('status').textContent='● PROMPTING';$('resume').textContent='Ⅱ PAUSE';raf=requestAnimationFrame(frame)}
+function pause(){playing=false;last=0;cancelAnimationFrame(raf);$('status').textContent='PAUSED';$('resume').textContent='▶ RESUME'}
+function togglePause(){playing?pause():play()}
+function stop(){playing=false;last=0;cancelAnimationFrame(raf);clearInterval(ct);$('count').classList.remove('on');$('prompt').classList.remove('running');$('status').textContent='STOPPED';$('resume').textContent='▶ RESUME'}
+function restart(){stop();offset=0;$('promptText').style.top='44%';$('status').textContent='READY'}
+function start(){restart();let n=Math.max(0,Math.min(30,parseInt($('secs').value)||0));if(!n)return play();$('count').textContent=n;$('count').classList.add('on');$('status').textContent='COUNTDOWN';ct=setInterval(()=>{n--;$('count').textContent=n;if(n<=0){clearInterval(ct);$('count').classList.remove('on');play()}},1000)}
+$('start').onclick=start;$('resume').onclick=togglePause;$('stop').onclick=stop;$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+5);updateSpeed()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-5);updateSpeed()};$('larger').onclick=()=>{let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('smaller').onclick=()=>{let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('mirror').onclick=()=>document.body.classList.toggle('mirror');
+let viewRotation=0;
+function rotatePrompt(){
+  const p=$('prompt');
+  viewRotation=(viewRotation+90)%360;
+  p.classList.remove('view90','view180','view270');
+  if(viewRotation===90)p.classList.add('view90');
+  else if(viewRotation===180)p.classList.add('view180');
+  else if(viewRotation===270)p.classList.add('view270');
+  $('rotate').textContent='↻ '+viewRotation+'°';
+}
+$('rotate').onclick=rotatePrompt;
+
+$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+
+/* =====================================================
+   BLUETOOTH KEYBOARD / REMOTE CONTROLS
+   Works only while the active teleprompter is open.
+   ↑ / ↓ : speed
+   ← / → : move through script
+   Space / Enter / MediaPlayPause : play/pause
+   Home : restart
+   + / - : reader size
+   ===================================================== */
+
+function handleBluetoothKey(e){
+  if(!$('prompt').style.display || $('prompt').style.display==='none') return;
+
+  const tag = document.activeElement && document.activeElement.tagName;
+  if(tag==='INPUT' || tag==='SELECT' || tag==='TEXTAREA' || tag==='BUTTON') return;
+
+  const k=e.key;
+  const code=e.code;
+
+  if(k==='ArrowUp'){
+    e.preventDefault();
+    $('speed').value=Math.min(180,+$('speed').value+5);
+    updateSpeed();
+    return;
+  }
+
+  if(k==='ArrowDown'){
+    e.preventDefault();
+    $('speed').value=Math.max(5,+$('speed').value-5);
+    updateSpeed();
+    return;
+  }
+
+  if(k==='ArrowLeft'){
+    e.preventDefault();
+    offset=Math.max(0,offset-360);
+    $('promptText').style.top=`calc(44% - ${offset}px)`;
+    return;
+  }
+
+  if(k==='ArrowRight'){
+    e.preventDefault();
+    offset+=360;
+    $('promptText').style.top=`calc(44% - ${offset}px)`;
+    return;
+  }
+
+  if(k===' ' || k==='Enter' || k==='MediaPlayPause' || code==='MediaPlayPause'){
+    e.preventDefault();
+    togglePause();
+    return;
+  }
+
+  if(k==='Home'){
+    e.preventDefault();
+    restart();
+    return;
+  }
+
+  if(k==='+' || k==='='){
+    e.preventDefault();
+    let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;
+    v=Math.min(400,v);
+    $('scale').dataset.live=v;
+    $('scaleV').textContent=v+'%';
+    localStorage.setItem('n1v5liveScale',v);
+    applyLiveScale(v);
+    return;
+  }
+
+  if(k==='-' || k==='_'){
+    e.preventDefault();
+    let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);
+    $('scale').dataset.live=v;
+    $('scaleV').textContent=v+'%';
+    localStorage.setItem('n1v5liveScale',v);
+    applyLiveScale(v);
+  }
+}
+
+
+/* Capture the remote's center/OK button at the window level.
+   Some Bluetooth remotes report it as Enter, NumpadEnter,
+   Select, or a media/select key. Prevent the browser from
+   selecting/highlighting prompt text. */
+function handleRemoteOK(e){
+  if(!$('prompt') || $('prompt').style.display!=='block') return;
+
+  const k=e.key;
+  const code=e.code;
+
+  const isOK =
+    k==='Enter' ||
+    k==='NumpadEnter' ||
+    k==='Select' ||
+    code==='Enter' ||
+    code==='NumpadEnter' ||
+    code==='Select' ||
+    code==='BrowserSelect';
+
+  if(isOK){
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    /* If countdown is active, OK starts it.
+       Otherwise OK toggles play/pause. */
+    if($('count').classList.contains('on')){
+      clearInterval(ct);
+      $('count').classList.remove('on');
+      play();
+    } else {
+      togglePause();
+    }
+    return false;
+  }
+}
+
+/* Run in capture phase so the browser cannot turn the OK
+   press into text selection or a focused-button action. */
+window.addEventListener('keydown',handleRemoteOK,true);
+window.addEventListener('keypress',handleRemoteOK,true);
+window.addEventListener('keyup',function(e){
+  if(!$('prompt') || $('prompt').style.display!=='block') return;
+  const k=e.key, code=e.code;
+  if(k==='Enter'||k==='NumpadEnter'||k==='Select'||
+     code==='Enter'||code==='NumpadEnter'||code==='Select'||
+     code==='BrowserSelect'){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+},true);
+
+/* Keep the existing arrow/media controls as well. */
+document.addEventListener('keydown',handleBluetoothKey);
+
+
+$('speed').value=localStorage.getItem('n1v4speed')||45;$('scale').value=localStorage.getItem('n1v4scale')||100;$('secs').value=localStorage.getItem('n1v4secs')||5;labels();
+let lib=getLib();if(!Object.keys(lib).length){let old=localStorage.getItem('n1v3html')||localStorage.getItem('n1html');currentId='welcome';lib[currentId]={name:'My First Script',html:old||$('editor').innerHTML,updated:Date.now()};setLib(lib)}refreshList();if($('scriptList').value)loadScript($('scriptList').value);
+if('serviceWorker'in navigator&&location.protocol!=='file:')window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
+</script></body></html>
