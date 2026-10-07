@@ -30,15 +30,16 @@ header{height:62px;display:flex;align-items:center;justify-content:space-between
 #orientationDock button span{display:block;font-size:9px;letter-spacing:.4px;margin-top:5px}
 body.promptOpen #orientationDock{display:block}
 #promptControls .runningControls{display:none;align-items:center;gap:7px}
+body.promptOpen #promptControls.running{background:transparent;border:0;padding:0}
+body.promptOpen #promptControls.running .runningControls{background:#0d121bdd;border:1px solid #334054;border-radius:16px;padding:9px}
 #promptControls .fullControls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center}
 body.promptOpen #promptControls .fullControls{display:flex}
 body.promptOpen #promptControls .runningControls{display:none}
-body.promptOpen #promptControls.running #promptControls .fullControls{display:none}
-body.promptOpen #promptControls.running #promptControls .runningControls{display:flex}
-body.promptOpen #promptControls.running #promptControls .runningControls #start{display:none}
-body.promptOpen #promptControls.running #promptControls .runningControls #resume{display:block}
-body.promptOpen #promptControls:not(.running) #promptControls .runningControls{display:flex}
-body.promptOpen #promptControls:not(.running) #promptControls .runningControls{display:none}
+body.promptOpen #promptControls.running .fullControls{display:none}
+body.promptOpen #promptControls.running .runningControls{display:flex}
+body.promptOpen #promptControls.running .runningControls #start{display:none}
+body.promptOpen #promptControls.running .runningControls #resume{display:block}
+body.promptOpen #promptControls:not(.running) .runningControls{display:none}
 #speedMeter{display:none;position:fixed;z-index:505;right:max(10px,env(safe-area-inset-right));top:82px;width:66px;padding:8px 6px;border:1px solid #59677c;border-radius:12px;background:#101720e8;color:#fff;align-items:center;flex-direction:column;gap:5px;box-shadow:0 4px 16px #0008}
 #speedMeter .speedMeterTitle{font-size:9px;font-weight:900;letter-spacing:.7px}
 #speedMeter .speedValue{font-size:16px;font-weight:900;line-height:1}
@@ -150,7 +151,7 @@ $('scale').oninput=updateScale;$('secs').onchange=persistSettings;
 function openPrompt(){exactSpeed();saveExactSpeed();syncPromptSpeed();saveCurrent();$('promptText').innerHTML=$('editor').innerHTML;let v=parseInt(localStorage.getItem('n1v5liveScale')||$('scale').value)||100;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';applyLiveScale(v);$('prompt').style.display='block';document.body.classList.add('promptOpen');setPromptControlMode(false);keepAwake();restart()}
 $('open').onclick=openPrompt;$('exit').onclick=()=>{stop();$('prompt').style.display='none';document.body.classList.remove('promptOpen');allowSleep()};
 function frame(t){if(!playing)return;if(!last)last=t;offset+=(t-last)/1000*+$('speed').value;last=t;$('promptText').style.top=`calc(44% - ${offset}px)`;raf=requestAnimationFrame(frame)}
-function play(){if(playing)return;keepAwake();playing=true;setPromptControlMode(true);last=0;$('prompt').classList.add('running');$('status').textContent='● PROMPTING';$('resume').textContent='Ⅱ PAUSE';raf=requestAnimationFrame(frame)}
+function play(){if(playing)return;setPromptControlMode(true);keepAwake();playing=true;last=0;$('prompt').classList.add('running');$('status').textContent='● PROMPTING';$('resume').textContent='Ⅱ PAUSE';raf=requestAnimationFrame(frame)}
 function pause(){playing=false;last=0;cancelAnimationFrame(raf);setPromptControlMode(false);$('status').textContent='PAUSED';$('resume').textContent='▶ RESUME'}
 function togglePause(){playing?pause():play()}
 function stop(){playing=false;last=0;cancelAnimationFrame(raf);clearInterval(ct);setPromptControlMode(false);$('count').classList.remove('on');$('prompt').classList.remove('running');$('status').textContent='STOPPED';$('resume').textContent='▶ RESUME'}
