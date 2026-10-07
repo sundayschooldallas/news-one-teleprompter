@@ -29,17 +29,25 @@ header{height:62px;display:flex;align-items:center;justify-content:space-between
 #orientationDock button{pointer-events:auto;width:58px;min-height:92px;padding:8px 5px;border:1px solid #59677c;border-radius:14px;background:#111923e8;color:#fff;font-weight:900;font-size:24px;box-shadow:0 2px 12px #0008}
 #orientationDock button span{display:block;font-size:9px;letter-spacing:.4px;margin-top:5px}
 body.promptOpen #orientationDock{display:block}
+#promptControls .runningControls{display:none;align-items:center;gap:7px}
+#promptControls .fullControls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center}
+body.promptOpen #promptControls .fullControls{display:flex}
+body.promptOpen #promptControls .runningControls{display:none}
+body.promptOpen #promptControls.running #promptControls .fullControls{display:none}
+body.promptOpen #promptControls.running #promptControls .runningControls{display:flex}
+body.promptOpen #promptControls.running #promptControls .runningControls #start{display:none}
+body.promptOpen #promptControls.running #promptControls .runningControls #resume{display:block}
+body.promptOpen #promptControls:not(.running) #promptControls .runningControls{display:flex}
+body.promptOpen #promptControls:not(.running) #promptControls .runningControls{display:none}
 #speedMeter{display:none;position:fixed;z-index:505;right:max(10px,env(safe-area-inset-right));top:82px;width:66px;padding:8px 6px;border:1px solid #59677c;border-radius:12px;background:#101720e8;color:#fff;align-items:center;flex-direction:column;gap:5px;box-shadow:0 4px 16px #0008}
 #speedMeter .speedMeterTitle{font-size:9px;font-weight:900;letter-spacing:.7px}
 #speedMeter .speedValue{font-size:16px;font-weight:900;line-height:1}
 #speedMeter input[type=range]{writing-mode:vertical-lr;direction:rtl;width:30px;height:125px;accent-color:#fff}
 #speedMeter button{height:28px;padding:0 6px;border:1px solid #66758b;border-radius:7px;background:#1d2735;color:#fff;font-size:8px;font-weight:900}
 body.promptOpen #speedMeter{display:flex}
-@media(max-width:700px){#speedMeter{top:72px;right:6px;width:58px}.speedValue{font-size:15px!important}#speedMeter input[type=range]{height:105px}}
+@media(max-width:700px){#promptControls .runningControls button{min-width:70px}#speedMeter{top:72px;right:6px;width:58px}.speedValue{font-size:15px!important}#speedMeter input[type=range]{height:105px}}
 @media(max-width:700px){#activeSpeed{bottom:86px;font-size:10px}#activeSpeed input{width:60px}}
-#btStatus{display:none;position:fixed;z-index:501;right:max(8px,env(safe-area-inset-right));top:calc(50% + 58px);transform:translateY(-50%);max-width:210px;padding:7px 9px;border:1px solid #59677c;border-radius:10px;background:#111923e8;color:#d8e0eb;font-size:9px;line-height:1.25;font-weight:800;text-align:center}
-body.promptOpen #btStatus{display:block}
-@media(max-width:700px){#btStatus{font-size:8px;max-width:155px}}
+body.promptOpen @media(max-width:700px){}
 
 .viewportControls{display:none!important;position:fixed!important;z-index:490!important;left:50%!important;bottom:max(8px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:auto!important;max-width:calc(100vw - 82px)!important;max-height:34vh!important;overflow:auto!important;flex-wrap:wrap!important;justify-content:center!important}
 body.promptOpen .viewportControls{display:flex!important}
@@ -53,9 +61,27 @@ body.promptOpen #orientationDock{display:block!important}
 <div class="toolbar"><button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="underline"><u>U</u></button><select id="font"><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Tahoma</option><option>Times New Roman</option></select><select id="editSize"><option value="20">20px</option><option value="24">24px</option><option value="28" selected>28px</option><option value="32">32px</option><option value="36">36px</option><option value="42">42px</option><option value="48">48px</option><option value="56">56px</option><option value="64">64px</option></select><input id="color" type="color" value="#111111"><button data-cmd="justifyLeft">LEFT</button><button data-cmd="justifyCenter">CENTER</button><button data-cmd="justifyRight">RIGHT</button><button data-cmd="insertUnorderedList">• LIST</button><button data-cmd="insertOrderedList">1. LIST</button><button id="clear">CLEAR</button></div>
 <div id="editorWrap"><div id="editor" contenteditable="true"></div></div>
 <div class="bottom"><div class="settings"><span class="setting">EXACT SPEED <input id="speed" type="number" min="5" max="180" step="1" value="45" inputmode="numeric" style="width:72px;background:#192230;color:#fff;border:1px solid #3a4659;border-radius:8px;padding:8px"><b>px/sec</b><button id="saveSpeed" type="button" style="height:38px;padding:0 10px;border:1px solid #3a4659;border-radius:8px;background:#1d2735;color:#fff;font-weight:900">SAVE SPEED</button></span><span class="setting">READER SCALE <input id="scale" type="range" min="50" max="400" value="100"><b id="scaleV">100%</b></span><span class="setting">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span></div><div class="actions"><button id="saveBottom" class="save">SAVE CURRENT SCRIPT</button><button id="open" class="open">OPEN TELEPROMPTER ▶</button></div></div></section>
-<section id="prompt"><div class="promptTop"><div id="status">READY</div><button id="exit" class="exit">✕ EDITOR</button></div><div id="view"><div class="guide"></div><div id="promptText" class="promptText"></div><div id="count">5</div></div></section>
+<section id="prompt"><div class="promptTop"><div id="status">READY</div><button id="exit" class="exit">✕ EDITOR</button></div><div id="view"><div id="promptText" class="promptText"></div><div id="count">5</div></div></section>
 
-<div class="controls viewportControls"><button id="restart">↺ RESTART</button><button id="start" class="start">▶ START</button><button id="resume">Ⅱ PAUSE</button><button id="stop" class="stop">■ STOP</button><button id="smaller">A−</button><button id="larger">A+</button><button id="slower">− SPEED</button><button id="faster">+ SPEED</button><button id="mirror">⇄ MIRROR</button><button id="full" class="extra">⛶</button></div>
+<div class="controls viewportControls" id="promptControls">
+  <div class="runningControls" id="runningControls">
+    <button id="start" class="start">▶ START</button>
+    <button id="resume">Ⅱ PAUSE</button>
+    <button id="stop" class="stop">■ STOP</button>
+  </div>
+  <div class="fullControls" id="fullControls">
+    <button id="restart">↺ RESTART</button>
+    <button id="startFull" class="start">▶ START</button>
+    <button id="resumeFull">Ⅱ PAUSE</button>
+    <button id="stopFull" class="stop">■ STOP</button>
+    <button id="smaller">A−</button>
+    <button id="larger">A+</button>
+    <button id="slower">− SPEED</button>
+    <button id="faster">+ SPEED</button>
+    <button id="mirror">⇄ MIRROR</button>
+    <button id="full" class="extra">⛶</button>
+  </div>
+</div>
 <div id="speedMeter" aria-label="Teleprompter speed control">
   <div class="speedMeterTitle">SPEED</div>
   <div class="speedValue" id="promptSpeedValue">45</div>
@@ -64,7 +90,7 @@ body.promptOpen #orientationDock{display:block!important}
   <button id="savePromptSpeed" type="button">SAVE</button>
 </div>
 <div id="orientationDock"><button id="rotate">↻<span>ORIENT</span></button></div>
-<div id="btStatus">BT KEYS: ↑↓ SPEED • ←→ MOVE • SPACE/PLAY PAUSE</div>
+
 <script>
 const $=id=>document.getElementById(id);let playing=false,last=0,offset=0,raf=0,ct=0,currentId=null;
 let wakeLock=null;
@@ -121,16 +147,23 @@ $('promptSpeed').addEventListener('input',()=>{
 });
 $('promptSpeed').addEventListener('change',savePromptSpeed);
 $('scale').oninput=updateScale;$('secs').onchange=persistSettings;
-function openPrompt(){exactSpeed();saveExactSpeed();syncPromptSpeed();saveCurrent();$('promptText').innerHTML=$('editor').innerHTML;let v=parseInt(localStorage.getItem('n1v5liveScale')||$('scale').value)||100;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';applyLiveScale(v);$('prompt').style.display='block';document.body.classList.add('promptOpen');keepAwake();restart()}
+function openPrompt(){exactSpeed();saveExactSpeed();syncPromptSpeed();saveCurrent();$('promptText').innerHTML=$('editor').innerHTML;let v=parseInt(localStorage.getItem('n1v5liveScale')||$('scale').value)||100;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';applyLiveScale(v);$('prompt').style.display='block';document.body.classList.add('promptOpen');setPromptControlMode(false);keepAwake();restart()}
 $('open').onclick=openPrompt;$('exit').onclick=()=>{stop();$('prompt').style.display='none';document.body.classList.remove('promptOpen');allowSleep()};
 function frame(t){if(!playing)return;if(!last)last=t;offset+=(t-last)/1000*+$('speed').value;last=t;$('promptText').style.top=`calc(44% - ${offset}px)`;raf=requestAnimationFrame(frame)}
-function play(){if(playing)return;keepAwake();playing=true;last=0;$('prompt').classList.add('running');$('status').textContent='● PROMPTING';$('resume').textContent='Ⅱ PAUSE';raf=requestAnimationFrame(frame)}
-function pause(){playing=false;last=0;cancelAnimationFrame(raf);$('status').textContent='PAUSED';$('resume').textContent='▶ RESUME'}
+function play(){if(playing)return;keepAwake();playing=true;setPromptControlMode(true);last=0;$('prompt').classList.add('running');$('status').textContent='● PROMPTING';$('resume').textContent='Ⅱ PAUSE';raf=requestAnimationFrame(frame)}
+function pause(){playing=false;last=0;cancelAnimationFrame(raf);setPromptControlMode(false);$('status').textContent='PAUSED';$('resume').textContent='▶ RESUME'}
 function togglePause(){playing?pause():play()}
-function stop(){playing=false;last=0;cancelAnimationFrame(raf);clearInterval(ct);$('count').classList.remove('on');$('prompt').classList.remove('running');$('status').textContent='STOPPED';$('resume').textContent='▶ RESUME'}
-function restart(){stop();offset=0;$('promptText').style.top='44%';$('status').textContent='READY'}
+function stop(){playing=false;last=0;cancelAnimationFrame(raf);clearInterval(ct);setPromptControlMode(false);$('count').classList.remove('on');$('prompt').classList.remove('running');$('status').textContent='STOPPED';$('resume').textContent='▶ RESUME'}
+function restart(){stop();offset=0;setPromptControlMode(false);$('promptText').style.top='44%';$('status').textContent='READY'}
 function start(){restart();let n=Math.max(0,Math.min(30,parseInt($('secs').value)||0));if(!n)return play();$('count').textContent=n;$('count').classList.add('on');$('status').textContent='COUNTDOWN';ct=setInterval(()=>{n--;$('count').textContent=n;if(n<=0){clearInterval(ct);$('count').classList.remove('on');play()}},1000)}
-$('start').onclick=start;$('resume').onclick=togglePause;$('stop').onclick=stop;$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+1);syncPromptSpeed();updateSpeed()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-1);syncPromptSpeed();updateSpeed()};$('larger').onclick=()=>{let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('smaller').onclick=()=>{let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('mirror').onclick=()=>document.body.classList.toggle('mirror');
+
+function setPromptControlMode(running){
+  const bar=$('promptControls');
+  if(bar) bar.classList.toggle('running',!!running);
+  if($('speedMeter')) $('speedMeter').style.display = document.body.classList.contains('promptOpen') ? 'flex' : '';
+}
+
+$('start').onclick=start;$('resume').onclick=togglePause;$('stop').onclick=stop;$('startFull').onclick=start;$('resumeFull').onclick=togglePause;$('stopFull').onclick=stop;$('restart').onclick=restart;$('faster').onclick=()=>{$('speed').value=Math.min(180,+$('speed').value+1);syncPromptSpeed();updateSpeed()};$('slower').onclick=()=>{$('speed').value=Math.max(5,+$('speed').value-1);syncPromptSpeed();updateSpeed()};$('larger').onclick=()=>{let v=(parseInt($('scale').dataset.live||$('scale').value)||100)+10;$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('smaller').onclick=()=>{let v=Math.max(10,(parseInt($('scale').dataset.live||$('scale').value)||100)-10);$('scale').dataset.live=v;$('scaleV').textContent=v+'%';localStorage.setItem('n1v5liveScale',v);applyLiveScale(v)};$('mirror').onclick=()=>document.body.classList.toggle('mirror');
 let viewRotation=0;
 function rotatePrompt(){
   const p=$('prompt');
