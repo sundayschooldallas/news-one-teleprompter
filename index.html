@@ -18,7 +18,7 @@
 </style></head><body><div class="app"><div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER</small></div><div id="status" class="status">READY</div></div>
 <div id="stage" class="stage"><div class="guide"></div><div id="text" class="text">Click EDIT SCRIPT below and paste your teleprompter script.</div><div id="count" class="count">5</div></div>
 <div class="controls"><div class="row"><button id="library">▤ STORIES</button><button id="edit">✎ EDIT SCRIPT</button><button id="start" class="primary">▶ START</button><button id="pause">Ⅱ PAUSE / PLAY</button><button id="restart">↺ RESTART</button><button id="mirror">⇄ MIRROR</button><button id="full">⛶ FULL SCREEN</button><span class="field">SPEED <input id="speed" type="range" min="5" max="150" value="45"><b id="sv">45</b></span><span class="field">SIZE <input id="size" type="range" min="28" max="120" value="64"><b id="zv">64</b></span><span class="field">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span></div><div class="help">Space = pause/play • ↑/↓ = speed • +/- = font size • Click screen = pause/play • Settings and script are remembered</div></div></div>
-<section class="storyEditor" aria-label="Story editor"><header class="storyEditorHeader"><div><h2>Write or Edit Story</h2><p>Give your story a name, then enter the script below.</p></div><button id="cancel" type="button">✕ CLOSE</button></header><div class="storyTitleField"><label for="storyTitle">STORY TITLE <span>(required)</span></label><input id="storyTitle" type="text" maxlength="150" autocomplete="off" placeholder="Example: Today's Breaking News" aria-label="Story title"><small>This is the name you'll see in your Saved Stories list.</small></div><div class="storyScriptField"><label for="editor">TELEPROMPTER SCRIPT</label><textarea id="editor" placeholder="Paste or type the story you want to read on the teleprompter..."></textarea></div><footer class="storyEditorFooter"><span id="editorSaveHint" role="status" aria-live="polite">Your story will be saved under the title above.</span><button id="save" class="primary" type="button">✓ SAVE STORY</button></footer></section>
+<section class="storyEditor" aria-label="Story editor"><header class="storyEditorHeader"><div><h2>Story Editor · Layout v5</h2><p>Give your story a name, then enter the script below.</p></div><button id="cancel" type="button">✕ CLOSE</button></header><div class="storyTitleField"><label for="storyTitle">STORY TITLE <span>(required)</span></label><input id="storyTitle" type="text" maxlength="150" autocomplete="off" placeholder="Example: Today's Breaking News" aria-label="Story title"><small>This is the name you'll see in your Saved Stories list.</small></div><div class="storyScriptField"><label for="editor">TELEPROMPTER SCRIPT</label><textarea id="editor" placeholder="Paste or type the story you want to read on the teleprompter..."></textarea></div><footer class="storyEditorFooter"><span id="editorSaveHint" role="status" aria-live="polite">Your story will be saved under the title above.</span><button id="save" class="primary" type="button">✓ SAVE STORY</button></footer></section>
 <style>
 .storyEditor{display:none;position:fixed;inset:0;z-index:35;background:#0b1018;color:white;flex-direction:column;padding:clamp(12px,3vw,28px);gap:14px;overflow-y:auto}
 body.editing .storyEditor{display:flex}
@@ -36,17 +36,31 @@ body.editing .storyEditor{display:flex}
 .storyEditorFooter span{font-size:12px;color:#aab3c2}
 .storyEditorFooter button{background:#e9f5ff;color:#061522;border:2px solid #61b8ff;white-space:nowrap;font-size:14px}
 @media(max-width:600px){.storyEditor{padding:12px;gap:11px}.storyEditorHeader p{font-size:12px}.storyEditorFooter{flex-direction:column;align-items:stretch}.storyEditorFooter button{padding:15px;font-size:16px}.storyEditorFooter span{text-align:center}}
+</style><style id="definitive-editor-fix">
+body.editing>.app{display:none!important}
+body.editing>.storyEditor{display:flex!important;position:fixed!important;inset:0!important;z-index:99999!important;background:#0b1018!important}
+body.editing .storyEditor #editor{position:static!important;inset:auto!important;display:block!important;min-height:180px!important;max-height:none!important;width:100%!important;flex:1 1 auto!important;box-sizing:border-box!important}
+body.editing .storyEditor .storyScriptField{flex:1 1 auto!important;min-height:180px!important;overflow:auto!important}
+body.editing .storyEditor .storyEditorFooter{position:relative!important;flex:none!important;background:#0b1018!important}
+body.editing .storyEditor .storyTitleField{flex:none!important}
+body.editing .storyEditor{overflow-y:auto!important;overscroll-behavior:contain!important}
+@media(max-width:650px){
+body.editing .storyEditor{padding:10px!important;gap:10px!important}
+body.editing .storyEditor .storyEditorHeader{flex:none!important}
+body.editing .storyEditor .storyScriptField{min-height:220px!important}
+body.editing .storyEditor .storyEditorFooter{padding-bottom:12px!important}
+}
 </style><style id="mobile-editor-layout-fix">
 /* Isolated full-screen story editor: no floating fields over the script. */
-body.editing .storyEditor{display:grid!important;grid-template-rows:auto auto minmax(0,1fr) auto!important;position:fixed!important;inset:0!important;width:100%!important;height:100dvh!important;max-height:100dvh!important;z-index:1000!important;overflow:hidden!important;gap:10px!important;padding:12px 12px max(12px,env(safe-area-inset-bottom))!important;background:#0b1018!important;box-sizing:border-box!important}
+body.editing .storyEditor{display:flex!important;flex-direction:column!important;position:fixed!important;inset:0!important;width:100%!important;height:100dvh!important;max-height:100dvh!important;z-index:1000!important;overflow-y:auto!important;gap:10px!important;padding:12px 12px max(12px,env(safe-area-inset-bottom))!important;background:#0b1018!important;box-sizing:border-box!important}
 .storyEditorHeader{min-height:0;display:flex!important;align-items:center;justify-content:space-between;gap:8px}
 .storyEditorHeader h2{font-size:18px;margin:0}.storyEditorHeader p{font-size:11px;margin:3px 0 0}
 .storyEditorHeader #cancel{flex-shrink:0;padding:10px;font-size:12px}
 .storyTitleField{display:flex!important;flex-direction:column!important;gap:5px!important;min-height:0!important}
 .storyTitleField input{display:block!important;position:static!important;top:auto!important;left:auto!important;right:auto!important;width:100%!important;min-width:0!important;max-width:100%!important;height:46px!important;flex:none!important;font-size:16px!important;padding:10px 12px!important;box-sizing:border-box!important}
 .storyTitleField small{font-size:11px}
-.storyScriptField{display:flex!important;flex-direction:column!important;min-height:0!important;height:auto!important;overflow:hidden!important;gap:6px!important}
-body.editing .storyEditor textarea#editor{display:block!important;position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;flex:1 1 auto!important;overflow:auto!important;resize:none!important;margin:0!important;padding:12px!important;border:1px solid #53627b!important;border-radius:10px!important;font-size:17px!important;line-height:1.5!important;box-sizing:border-box!important;transform:none!important}
+.storyScriptField{display:flex!important;flex-direction:column!important;min-height:220px!important;flex:1 0 220px!important;height:auto!important;overflow:visible!important;gap:6px!important}
+body.editing .storyEditor textarea#editor{display:block!important;position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;width:100%!important;height:100%!important;min-height:180px!important;max-height:none!important;flex:1 1 auto!important;overflow:auto!important;resize:none!important;margin:0!important;padding:12px!important;border:1px solid #53627b!important;border-radius:10px!important;font-size:17px!important;line-height:1.5!important;box-sizing:border-box!important;transform:none!important}
 .storyEditorFooter{display:flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important;min-height:48px!important;padding:0!important;flex-shrink:0!important}
 .storyEditorFooter #editorSaveHint{flex:1;min-width:0;font-size:11px}
 .storyEditorFooter #save{flex-shrink:0!important;padding:13px 16px!important;font-size:14px!important;min-height:46px!important}
