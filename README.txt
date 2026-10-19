@@ -1,29 +1,7 @@
-NEWS ONE PRODUCTION — TABLET TELEPROMPTER PWA
+NEWS ONE TELEPROMPTER PWA
 
-This folder is a private installable web app (PWA). It is not submitted to any app store.
-
-IMPORTANT:
-A PWA must be opened from HTTPS (or localhost) for Add to Home Screen / offline service-worker behavior.
-Opening index.html directly as a local file will still run the teleprompter, but browsers generally will not install it as a standalone PWA.
-
-FILES:
-- index.html
-- manifest.webmanifest
-- service-worker.js
-- icon-192.png
-- icon-512.png
-
-INSTALL ON TABLET AFTER HOSTING OVER HTTPS:
-iPad/iPhone Safari:
-1. Open the app URL in Safari.
-2. Tap Share.
-3. Tap Add to Home Screen.
-4. Tap Add.
-
-Android Chrome:
-1. Open the app URL in Chrome.
-2. Open the browser menu.
-3. Tap Install app or Add to Home screen.
-4. Confirm.
-
-Once installed, it launches from its News One icon in a standalone app-style window.
+Upload the CONTENTS of this folder to an HTTPS website folder, keeping all file paths.
+Open https://your-domain/your-folder/index.html in Android Chrome, then menu > Add to Home screen > Install.
+Visit once while online to cache files for offline use.
+Stories remain in browser localStorage and are NOT synced between devices. Export a story backup from your old app and restore it in the new installed app.
+Do not open index.html as a downloaded file to install it.

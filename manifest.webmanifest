@@ -1,21 +1,25 @@
 {
+  "id": "./",
   "name": "News One Production Teleprompter",
-  "short_name": "N1 Prompter",
+  "short_name": "News One",
+  "description": "Offline news production teleprompter with saved stories",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#050609",
-  "theme_color": "#080b10",
+  "background_color": "#05070b",
+  "theme_color": "#0b1018",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
