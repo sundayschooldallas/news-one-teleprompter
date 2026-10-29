@@ -118,24 +118,33 @@ class Handler(SimpleHTTPRequestHandler):
             now = int(time.time()*1000)
             target = now + seconds*1000
             set_state("countdown", seconds, target, False)
-            # Recording is triggered by a timer thread at the exact target.
-            def worker(expected_id):
-                delay = max(0, (target - int(time.time()*1000))/1000)
-                time.sleep(delay)
+            expected_id = state["id"]
+            def worker(expected_id, target):
+                while True:
+                    with state_lock:
+                        if state["id"] != expected_id or state["command"] != "countdown":
+                            return
+                    remaining_ms = target - int(time.time()*1000)
+                    if remaining_ms <= 0:
+                        break
+                    time.sleep(min(0.05, remaining_ms/1000))
                 with state_lock:
                     if state["id"] != expected_id or state["command"] != "countdown":
                         return
                 ok = vmix("StartRecording")
                 with state_lock:
+                    if state["id"] != expected_id or state["command"] != "countdown":
+                        if ok:
+                            vmix("StopRecording")
+                        return
                     state["command"] = "recording"
                     state["seconds"] = 0
                     state["targetAt"] = target
                     state["serverNow"] = int(time.time()*1000)
                     state["recording"] = bool(ok)
                 print("COUNTDOWN ZERO -> StartRecording:", ok)
-            expected_id = state["id"]
-            threading.Thread(target=worker, args=(expected_id,), daemon=True).start()
-            return self.end_json({"ok": True, "state": state})
+            threading.Thread(target=worker, args=(expected_id, target), daemon=True).start()
+            return self.end_json({"ok": True, "state": dict(state)})
 
         if parsed.path == "/api/stop":
             # Increment the state id first. Any countdown worker holding the

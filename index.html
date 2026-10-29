@@ -12,26 +12,25 @@ body{display:flex;flex-direction:column}.top{height:46px;border-bottom:1px solid
 .library{position:fixed;inset:7% 7%;z-index:50;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none;overflow:auto}.library.open{display:block}.story{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #273147;padding:12px 0}.storyTitle{font-weight:900}.storyBtns{display:flex;gap:6px}.editor{position:fixed;inset:6%;z-index:60;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none}.editor.open{display:flex;flex-direction:column;gap:10px}.editor textarea{flex:1;resize:none;background:#050609;color:#fff;border:1px solid #39465b;border-radius:10px;padding:15px;font-size:20px}.titleInput{background:#111824;color:#fff;border:1px solid #39465b;border-radius:8px;padding:10px;font-size:18px}
 </style></head>
 <body>
-<div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v23 LAN SYNC</small></div><div id="sync" class="status warn">● CONNECTING</div></div>
+<div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v25 LAN SYNC</small></div><div id="sync" class="status warn">● CONNECTING</div></div>
 <div class="stage" id="stage">
   <div id="textWrap" class="textWrap"><div id="text" class="text"></div></div>
   <div id="count" class="count">5</div>
-  <div id="monitor" class="monitor"><iframe id="vmix" src="http://192.168.254.149:8088/livelan" allow="autoplay"></iframe><div class="monitorBar"><button class="btn" id="flipMonitor">↕ FLIP VERTICAL</button><button class="btn" id="closeMonitor">✕ CLOSE</button></div></div>
+  <div id="monitor" class="monitor"><iframe id="vmixFrame" src="" allow="autoplay"></iframe><div class="monitorBar"><span class="vmixLabel">vMix LIVE LAN</span><button class="btn" id="flipMonitor">↕ FLIP VERTICAL</button><button class="btn" id="closeMonitor">✕ CLOSE</button></div></div></div>
 </div>
 <div class="controls"><div class="row">
 <button class="btn" id="stories">▤ STORIES</button><button class="btn" id="edit">✎ EDIT SCRIPT</button><button class="btn primary" id="start">▶ START</button><button class="btn" id="pause">Ⅱ PAUSE / PLAY</button><button class="btn danger" id="stop">■ STOP</button><button class="btn" id="restart">↺ RESTART</button><button class="btn" id="mirror">⇄ MIRROR</button><button class="btn" id="full">⛶ FULL SCREEN</button><button class="btn" id="rotate">↻ ROTATE</button><button class="btn" id="flipPrompt">↕ FLIP VERTICAL</button>
 <span class="field">SPEED <button class="btn" id="slow">−</button><span class="num" id="speedNum">45</span><button class="btn" id="fast">+</button></span>
 <span class="field">FONT <button class="btn" id="small">−</button><span class="num" id="sizeNum">80 px</span><button class="btn" id="large">+</button></span>
 <span class="field">COUNTDOWN <span class="num" id="secsNum">10 sec</span></span>
-</div><div class="help">Mouse wheel while scrolling = speed • settings are remembered • countdown: monitor until 5 seconds, then teleprompter • at 0 vMix recording starts</div></div>
+</div><div class="help">Mouse wheel while scrolling = speed • settings are remembered • countdown: vMix preview until 5 seconds, then teleprompter (paused) • at 0 vMix recording starts and scrolling begins</div></div>
 
 <div id="library" class="library"><div style="display:flex;justify-content:space-between;align-items:center"><h2>STORY LIBRARY</h2><div><button class="btn primary" id="newStory">＋ NEW STORY</button><button class="btn" id="closeLibrary">CLOSE</button></div></div><div id="storyList"></div></div>
 <div id="editor" class="editor"><input id="titleInput" class="titleInput" placeholder="Story title"><textarea id="editorText"></textarea><div><button class="btn primary" id="save">SAVE</button><button class="btn" id="cancel">CANCEL</button></div></div>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <script>
 const $=id=>document.getElementById(id);
-const PC=location.origin, VMIX_BASE='http://'+location.hostname+':8088';
+const PC=location.origin, VMIX_BASE='http://'+location.hostname+':8088', VMIX_PAGE=VMIX_BASE+'/livelan';
 const VMIX_PAGE=VMIX_BASE+'/livelan';
 const VMIX_HLS=VMIX_BASE+'/livelan/stream.m3u8';
 let hls=null;
@@ -93,7 +92,14 @@ function startVmixPreview(){
 }
 function setMonitorFlip(){monitorFlip=!monitorFlip;const t=monitorFlip?'scaleY(-1)':'none';$('vmixVideo').style.transform=t;$('vmixFrame').style.transform=t}
 $('flipMonitor').onclick=setMonitorFlip;$('closeMonitor').onclick=hideMonitor;
-$('start').onclick=async()=>{try{await fetch(PC+'/api/countdown',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seconds:secs})});}catch(e){alert('Sync server unavailable');}};
+$('start').onclick=async()=>{
+  pause(); offset=0; $('text').style.transform='translateY(0)';
+  $('count').classList.remove('show'); hideMonitor();
+  try{
+    const r=await fetch(PC+'/api/countdown',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seconds:secs}),cache:'no-store'});
+    if(!r.ok) throw new Error();
+  }catch(e){alert('Sync server unavailable');}
+};
 $('stop').onclick=async()=>{
   pause(); offset=0; $('count').classList.remove('show'); hideMonitor();
   try{await fetch(PC+'/api/stop',{method:'POST',cache:'no-store'})}catch(_){}
@@ -135,36 +141,25 @@ async function poll(){
    const j=await (await fetch(PC+'/api/state?x='+Date.now(),{cache:'no-store'})).json();
    $('sync').textContent='● VMIX SYNC READY';$('sync').className='status ready';
    if(j.id!==lastStateId){lastStateId=j.id;
-      if(j.command==='countdown'){
-        // Countdown is a pre-roll monitor. At 5 seconds, remove the
-        // countdown overlay and hand the screen to the teleprompter.
-        showMonitor();
-      }
-      if(j.command==='recording'){
-        $('count').classList.remove('show');
-        hideMonitor();
-        play();
-      }
-      if(j.command==='idle'){
-        $('count').classList.remove('show');
-        hideMonitor();
-        pause();
-      }
+      if(j.command==='countdown'){ showMonitor(); $('count').classList.remove('show'); }
+      if(j.command==='recording'){ $('count').classList.remove('show'); hideMonitor(); if(!playing) play(); }
+      if(j.command==='idle'){ $('count').classList.remove('show'); hideMonitor(); pause(); }
    }
    if(j.command==='countdown'){
       const rem=Math.max(0,Math.ceil((j.targetAt-Date.now())/1000));
       if(rem>5){
         showMonitor();
-        $('count').textContent=rem;
-        $('count').classList.add('show');
-      } else {
-        // Exactly at 5 seconds: switch cleanly to the teleprompter.
         $('count').classList.remove('show');
+        pause();
+      } else {
         hideMonitor();
-        if(!playing) play();
+        $('count').classList.remove('show');
+        // At 5 seconds the tablet switches to the teleprompter, but it stays paused.
+        // It starts scrolling only when the server changes to "recording" at zero.
+        pause();
       }
    }
- }catch(e){$('sync').textContent='● VMIX SYNC OFFLINE';$('sync').className='status bad'}
+    }catch(e){$('sync').textContent='● VMIX SYNC OFFLINE';$('sync').className='status bad'}
  setTimeout(poll,500);
 }
 $('count').classList.remove('show');
