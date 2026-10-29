@@ -118,41 +118,47 @@ class Handler(SimpleHTTPRequestHandler):
             now = int(time.time()*1000)
             target = now + seconds*1000
             set_state("countdown", seconds, target, False)
-            expected_id = state["id"]
+            with state_lock:
+                expected_id = state["id"]
+
             def worker(expected_id, target):
                 while True:
                     with state_lock:
                         if state["id"] != expected_id or state["command"] != "countdown":
+                            print("COUNTDOWN CANCELLED -> StartRecording was NOT sent")
                             return
                     remaining_ms = target - int(time.time()*1000)
                     if remaining_ms <= 0:
                         break
                     time.sleep(min(0.05, remaining_ms/1000))
-                with state_lock:
-                    if state["id"] != expected_id or state["command"] != "countdown":
-                        print("COUNTDOWN CANCELLED -> StartRecording was NOT sent")
-                        return
-                    # Mark the transition before the external call so a
-                    # simultaneous STOP cannot leave the UI thinking it is
-                    # still in countdown.
-                    state["command"] = "recording"
-                    state["seconds"] = 0
-                    state["targetAt"] = target
-                    state["serverNow"] = int(time.time()*1000)
+
+                # At zero, call vMix while the state is still "countdown".
+                # This avoids the race in v28/v27 where the worker changed
+                # the state first and then failed its own state check.
                 ok = vmix("StartRecording")
+
                 with state_lock:
                     if state["id"] != expected_id or state["command"] != "countdown":
+                        # STOP won the race. If vMix nevertheless started,
+                        # immediately stop it so an aborted countdown cannot
+                        # leave recording running.
                         if ok:
                             vmix("StopRecording")
+                        print("COUNTDOWN CANCELLED DURING VMIX CALL")
                         return
+
                     state["command"] = "recording"
                     state["seconds"] = 0
                     state["targetAt"] = target
                     state["serverNow"] = int(time.time()*1000)
                     state["recording"] = bool(ok)
+
                 print("COUNTDOWN ZERO -> StartRecording:", ok)
+
             threading.Thread(target=worker, args=(expected_id, target), daemon=True).start()
-            return self.end_json({"ok": True, "state": dict(state)})
+            with state_lock:
+                out = dict(state)
+            return self.end_json({"ok": True, "state": out})
 
         if parsed.path == "/api/stop":
             # Increment the state id first. Any countdown worker holding the
@@ -195,7 +201,7 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     if not os.path.exists(STORIES_FILE):
         save_stories([])
-    print("News One Production sync server v27 running on port 8091")
+    print("News One Production sync server v29 running on port 8091")
     print("Control Center: http://127.0.0.1:8091/control.html")
     print("Tablet Teleprompter: http://192.168.254.149:8091/index.html")
     print("Keep this window running while recording.")

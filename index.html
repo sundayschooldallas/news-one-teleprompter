@@ -30,12 +30,7 @@ body{display:flex;flex-direction:column}.top{height:46px;border-bottom:1px solid
 
 <script>
 const $=id=>document.getElementById(id);
-const PC=location.origin;
-const VMIX_BASE='http://'+location.hostname+':8088';
-const VMIX_PAGE=VMIX_BASE+'/livelan';
-const VMIX_HLS=VMIX_BASE+'/livelan/stream.m3u8';
-let hls=null;
-let playing=false,offset=0,last=0,raf=0,flipPrompt=false,mirror=false,rotation=0,monitorFlip=false;
+const PC=location.origin; const VMIX_PAGE='http://'+location.hostname+':8088/livelan'; let playing=false,offset=0,last=0,raf=0,flipPrompt=false,mirror=false,rotation=0,monitorFlip=false;
 let speed=+localStorage.n1speed||45,size=+localStorage.n1size||80,secs=+localStorage.n1secs||10;
 let currentStory=null, lastStateId=-1, countdownMode=false;
 
@@ -64,42 +59,17 @@ function showMonitor(){
 }
 function hideMonitor(){ $('monitor').classList.remove('show'); countdownMode=false; }
 function startVmixPreview(){
-  const video=$('vmixVideo'), frame=$('vmixFrame');
-  video.style.display='block';
-  frame.style.display='none';
-  video.src=VMIX_HLS;
-
-  const fallback=()=>{
-    try{if(hls)hls.destroy()}catch(_){}
-    hls=null;
-    video.pause();
-    video.removeAttribute('src');
-    video.style.display='none';
-    $('monitorLoading').style.display='none';
-    frame.src=VMIX_PAGE;
-    frame.style.display='block';
-  };
-
-  if(window.Hls && Hls.isSupported()){
-    try{
-      if(hls) hls.destroy();
-      hls=new Hls({lowLatencyMode:false});
-      hls.loadSource(VMIX_HLS);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED,()=>{ $('monitorLoading').style.display='none'; video.play().catch(()=>{}); });
-      hls.on(Hls.Events.ERROR,(e,d)=>{ if(d.fatal) fallback(); });
-    }catch(_){ fallback(); }
-  } else if(video.canPlayType('application/vnd.apple.mpegurl')){
-    video.play().catch(()=>fallback());
-  } else {
-    fallback();
-  }
+  const frame=$('vmixFrame');
+  $('monitorLoading').style.display='block';
+  frame.style.display='block';
+  frame.src=VMIX_PAGE;
+  frame.onload=()=>{ $('monitorLoading').style.display='none'; };
 }
-function setMonitorFlip(){monitorFlip=!monitorFlip;const t=monitorFlip?'scaleY(-1)':'none';$('vmixVideo').style.transform=t;$('vmixFrame').style.transform=t}
+function setMonitorFlip(){monitorFlip=!monitorFlip;const t=monitorFlip?'scaleY(-1)':'none';$('vmixFrame').style.transform=t}
 $('flipMonitor').onclick=setMonitorFlip;$('closeMonitor').onclick=hideMonitor;
 $('start').onclick=async()=>{
   pause(); offset=0; $('text').style.transform='translateY(0)';
-  $('count').classList.remove('show'); hideMonitor();
+  $('count').classList.remove('show'); hideMonitor(); $('sync').textContent='● STARTING COUNTDOWN'; $('sync').className='status warn';
   try{
     const r=await fetch(PC+'/api/countdown',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seconds:secs}),cache:'no-store'});
     if(!r.ok) throw new Error();
@@ -165,7 +135,7 @@ async function poll(){
       }
    }
     }catch(e){$('sync').textContent='● VMIX SYNC OFFLINE';$('sync').className='status bad'}
- setTimeout(poll,500);
+ setTimeout(poll,250);
 }
 $('count').classList.remove('show');
 render();loadStories();poll();

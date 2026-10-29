@@ -1,16 +1,34 @@
-NEWS ONE PRODUCTION v26
-- START always resets the teleprompter to paused before countdown.
-- vMix LiveLAN preview from 10 through 6 seconds.
-- At 5 seconds the preview switches to teleprompter, but scrolling remains paused.
-- At 0 the server starts vMix recording and then the tablet begins scrolling.
-- STOP cancels countdown and prevents pending recording.
-- Existing story library, speed/font buttons, mouse wheel, mirror, rotate, fullscreen and flips retained.
+NEWS ONE PRODUCTION v29
 
+This version fixes the vMix recording race and simplifies the tablet preview.
 
-v26 HOTFIX: corrected a JavaScript duplicate-const syntax error that prevented the sync polling and vMix preview code from running. Added a visible vMix preview loading state and safer LiveLAN fallback.
+START SEQUENCE:
+- Press START on tablet or Control Center.
+- The server sets the countdown target immediately.
+- While remaining time is > 5 seconds, tablet shows the vMix LiveLAN preview.
+- At 5 seconds, tablet switches to the teleprompter and remains PAUSED.
+- At 0, the server calls vMix StartRecording.
+- Only after vMix responds does the tablet enter RECORDING and begin scrolling.
 
+STOP:
+- STOP increments the server state id immediately.
+- The countdown worker sees the mismatch and aborts.
+- If a simultaneous vMix StartRecording call already returned success, the server immediately sends StopRecording.
+- STOP also clears the tablet countdown/preview.
 
-v27 HOTFIX: corrected server version/banner and printed the actual PC LAN URL (192.168.254.149). Do not use the YOUR-PC-IP placeholder.
+PREVIEW:
+- Uses the vMix LiveLAN browser page at http://PC-IP:8088/livelan.
+- No external HLS library or CDN is required.
 
+FILES:
+- sync_server.py
+- index.html
+- control.html
+- start_news_one_sync.bat
+- stories.json
 
-v28 HOTFIX: removed duplicate VMIX_PAGE JavaScript declaration that caused the entire teleprompter script to fail and left status at CONNECTING.
+Tablet:
+http://192.168.254.149:8091/index.html?v=29
+
+Control Center:
+http://127.0.0.1:8091/control.html
