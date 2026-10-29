@@ -3,11 +3,11 @@
   "name": "News One Production Teleprompter",
   "short_name": "News One",
   "description": "Offline news production teleprompter with saved stories",
-  "start_url": "./index.html?release=restored-story-library-20261020",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#07090d",
-  "theme_color": "#080b10",
+  "background_color": "#05070b",
+  "theme_color": "#0b1018",
   "icons": [
     {
       "src": "icons/icon-192.png",
