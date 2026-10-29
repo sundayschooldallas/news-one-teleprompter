@@ -130,7 +130,15 @@ class Handler(SimpleHTTPRequestHandler):
                     time.sleep(min(0.05, remaining_ms/1000))
                 with state_lock:
                     if state["id"] != expected_id or state["command"] != "countdown":
+                        print("COUNTDOWN CANCELLED -> StartRecording was NOT sent")
                         return
+                    # Mark the transition before the external call so a
+                    # simultaneous STOP cannot leave the UI thinking it is
+                    # still in countdown.
+                    state["command"] = "recording"
+                    state["seconds"] = 0
+                    state["targetAt"] = target
+                    state["serverNow"] = int(time.time()*1000)
                 ok = vmix("StartRecording")
                 with state_lock:
                     if state["id"] != expected_id or state["command"] != "countdown":
@@ -187,8 +195,8 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     if not os.path.exists(STORIES_FILE):
         save_stories([])
-    print("News One Production sync server v23 running on port 8091")
+    print("News One Production sync server v27 running on port 8091")
     print("Control Center: http://127.0.0.1:8091/control.html")
-    print("Tablet Teleprompter: http://YOUR-PC-IP:8091/index.html")
+    print("Tablet Teleprompter: http://192.168.254.149:8091/index.html")
     print("Keep this window running while recording.")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()

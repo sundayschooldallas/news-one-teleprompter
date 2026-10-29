@@ -8,3 +8,9 @@ NEWS ONE PRODUCTION v26
 
 
 v26 HOTFIX: corrected a JavaScript duplicate-const syntax error that prevented the sync polling and vMix preview code from running. Added a visible vMix preview loading state and safer LiveLAN fallback.
+
+
+v27 HOTFIX: corrected server version/banner and printed the actual PC LAN URL (192.168.254.149). Do not use the YOUR-PC-IP placeholder.
+
+
+v28 HOTFIX: removed duplicate VMIX_PAGE JavaScript declaration that caused the entire teleprompter script to fail and left status at CONNECTING.
