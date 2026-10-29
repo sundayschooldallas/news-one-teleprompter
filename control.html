@@ -80,12 +80,11 @@ async function syncCommand(command, targetAt=0, seconds=0){
   }
 }
 async function checkSync(){try{const r=await fetch('/api/state?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;$('syncConn').textContent='Tablet Sync • connected';$('syncConn').className='conn ok'}catch(e){$('syncConn').textContent='Tablet Sync • offline';$('syncConn').className='conn bad'}}
-function base(){ return `http://${$('host').value.trim()}/API/`; }
 async function vmix(fn){
-  const url = base()+`?Function=${encodeURIComponent(fn)}`;
-  const r=await fetch(url,{cache:'no-store'});
-  if(!r.ok) throw new Error(`vMix returned ${r.status}`);
-  return r.text();
+  const r=await fetch('/api/vmix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({function:fn}),cache:'no-store'});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok || !data.ok) throw new Error(data.error || ('vMix request failed: '+r.status));
+  return data;
 }
 function save(){
   localStorage.setItem('newsOneCountdown',$('seconds').value);
@@ -118,25 +117,20 @@ $('start').onclick=async()=>{
   $('count').textContent=remaining; running=true; $('start').disabled=true;
   await syncCommand('countdown',targetAt,remaining);
   msg('Countdown running — tablet synchronized.');
-  timer=setInterval(async()=>{
+  timer=setInterval(()=>{
     remaining--;
     $('count').textContent=String(Math.max(remaining,0)).padStart(2,'0');
     if(remaining<=0){
       clearInterval(timer); timer=null; running=false;
-      try{
-        await vmix('StartRecording');
-        setRecording(true); msg('Recording started.');
-      }catch(e){msg('Could not start vMix recording: '+e.message,true)}
+      // The sync server schedules StartRecording for the exact target time.
+      setRecording(true); msg('Recording started.');
       $('start').disabled=false;
     }
   },1000);
 };
 $('stop').onclick=async()=>{
-  await syncCommand('stop');
-  try{
-    await vmix('StopRecording');
-    setRecording(false); msg('Recording stopped.');
-  }catch(e){msg('Could not stop vMix recording: '+e.message,true)}
+  const ok=await syncCommand('stop');
+  if(ok){setRecording(false); msg('Recording stopped.')}else{msg('Could not reach the sync server to stop recording.',true)}
 };
 $('cancel').onclick=cancelCountdown;
 $('seconds').onchange=()=>{save();if(!running){remaining=parseInt($('seconds').value)||10;$('count').textContent=remaining}};
