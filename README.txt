@@ -1,7 +1,45 @@
-NEWS ONE TELEPROMPTER PWA
+NEWS ONE PRODUCTION v19 — CENTRAL STORY LIBRARY
 
-Upload the CONTENTS of this folder to an HTTPS website folder, keeping all file paths.
-Open https://your-domain/your-folder/index.html in Android Chrome, then menu > Add to Home screen > Install.
-Visit once while online to cache files for offline use.
-Stories remain in browser localStorage and are NOT synced between devices. Export a story backup from your old app and restore it in the new installed app.
-Do not open index.html as a downloaded file to install it.
+WHAT CHANGED
+- Stories are now stored centrally on the Windows News One sync server.
+- The Windows computer and Android tablet use the same story library.
+- Saving on one device makes the story available on the other device.
+- Rename and Delete operate on the shared library.
+- Existing browser-local stories are automatically migrated to the server when the server library is empty.
+- Backup/Restore remains available.
+- Existing vMix countdown/recording synchronization remains in place.
+
+SETUP
+1. Put this entire folder somewhere permanent, for example:
+   C:\NewsOneProductionSync
+
+2. Double-click:
+   start_news_one_sync.bat
+
+3. Keep the black Command Prompt window open. It should say:
+   News One Production sync server running on port 8091
+
+4. On the Windows computer open:
+   http://127.0.0.1:8091/control.html
+
+5. On the Android tablet open the LAN address printed by the server, for example:
+   http://192.168.254.149:8091/index.html
+
+IMPORTANT
+For the shared story library, use the local 8091 address on both devices. Do not use the github.io copy for the live teleprompter. A GitHub-hosted HTTPS page cannot directly use the Windows PC's HTTP API without browser mixed-content restrictions.
+
+STORY WORKFLOW
+- On the Windows computer: STORIES -> NEW STORY -> enter title/script -> SAVE STORY.
+- On the tablet: STORIES -> the saved story will appear.
+- If a story is saved or renamed on the tablet, it is saved to the same central library.
+
+FIREWALL
+If the tablet cannot open port 8091, allow Python through Windows Firewall on the Private network, or allow TCP 8091. Do not expose this server to the public Internet.
+
+FILES
+- index.html = v18 teleprompter with central story library
+- control.html = vMix recording control center
+- sync_server.py = LAN server, countdown sync, and central story API
+- stories.json = shared story database created automatically
+- start_news_one_sync.bat = one-click launcher
+- manifest.webmanifest / service-worker.js / icons = app support files

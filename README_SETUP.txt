@@ -1,67 +1,45 @@
-NEWS ONE PRODUCTION — vMix + Tablet Teleprompter Sync + LIVE MOUSE-WHEEL SPEED
+NEWS ONE PRODUCTION v19 — CENTRAL STORY LIBRARY
 
-WHAT THIS PACKAGE DOES
-- Keeps your v18 teleprompter, story library, editor, orientation, countdown, mirror, font-size controls, and saved settings.
-- Adds live mouse-wheel speed control to the teleprompter.
-- Mouse wheel UP while reading = +1 px/sec.
-- Mouse wheel DOWN while reading = -1 px/sec.
-- SHIFT + mouse wheel = +/-5 px/sec.
-- The page will not scroll from the mouse wheel while the teleprompter is running.
-- Keeps your News One Production vMix Recording Control Center.
-- When START COUNTDOWN & RECORD is clicked on the Windows PC, the tablet receives the same target start time.
-- The tablet displays a synchronized countdown and starts scrolling at the target time.
-- STOP RECORDING and CANCEL COUNTDOWN are also sent to the tablet.
-- The tablet has a VMIX MONITOR button for vMix LiveLAN on the same network.
+WHAT CHANGED
+- Stories are now stored centrally on the Windows News One sync server.
+- The Windows computer and Android tablet use the same story library.
+- Saving on one device makes the story available on the other device.
+- Rename and Delete operate on the shared library.
+- Existing browser-local stories are automatically migrated to the server when the server library is empty.
+- Backup/Restore remains available.
+- Existing vMix countdown/recording synchronization remains in place.
 
-FILES
-- index.html = synced v18 teleprompter with mouse-wheel speed control
-- control.html = synced vMix Recording Control Center
-- sync_server.py = small local LAN synchronization/web server
-- start_news_one_sync.bat = one-click Windows launcher
-- manifest.webmanifest / service-worker.js / icons = teleprompter PWA files
-
-SETUP ON WINDOWS vMix COMPUTER
-1. Unzip this whole folder somewhere permanent, for example:
+SETUP
+1. Put this entire folder somewhere permanent, for example:
    C:\NewsOneProductionSync
-2. Make sure Python 3 is installed.
-3. Double-click start_news_one_sync.bat.
-4. Leave that black command window running while recording.
-5. It will display a URL such as:
-   http://192.168.254.149:8091/index.html
 
-OPEN THE CONTROL CENTER ON WINDOWS
-Open:
+2. Double-click:
+   start_news_one_sync.bat
+
+3. Keep the black Command Prompt window open. It should say:
+   News One Production sync server running on port 8091
+
+4. On the Windows computer open:
    http://127.0.0.1:8091/control.html
 
-OPEN THE TELEPROMPTER ON THE ANDROID TABLET
-Make sure the tablet is on the SAME Wi-Fi/LAN as the Windows vMix computer.
-Open the tablet URL shown by sync_server.py, for example:
+5. On the Android tablet open the LAN address printed by the server, for example:
    http://192.168.254.149:8091/index.html
 
-You can then use Chrome's menu -> Add to Home screen to make a tablet shortcut.
+IMPORTANT
+For the shared story library, use the local 8091 address on both devices. Do not use the github.io copy for the live teleprompter. A GitHub-hosted HTTPS page cannot directly use the Windows PC's HTTP API without browser mixed-content restrictions.
 
-LIVE SPEED CONTROL
-- While the teleprompter is actively scrolling, move the mouse wheel UP or DOWN.
-- UP increases speed by exactly 1 px/sec.
-- DOWN decreases speed by exactly 1 px/sec.
-- Hold SHIFT while using the wheel for +/-5 px/sec.
-- The current speed number beside SPEED updates and is saved.
-- The same precise speed can still be adjusted with the on-screen speed control or keyboard arrows.
-
-VMIX
-- Keep vMix Web Controller enabled on port 8088.
-- The control center keeps using 127.0.0.1:8088 on the Windows PC.
-- The tablet's VMIX MONITOR button uses the Windows PC's IP and port 8088.
-
-Confirmed LiveLAN URL for this setup: http://192.168.254.149:8088/livelan
-- For the monitor, vMix LiveLAN must be enabled/started.
+STORY WORKFLOW
+- On the Windows computer: STORIES -> NEW STORY -> enter title/script -> SAVE STORY.
+- On the tablet: STORIES -> the saved story will appear.
+- If a story is saved or renamed on the tablet, it is saved to the same central library.
 
 FIREWALL
-If the tablet cannot connect to port 8091, allow Python (or TCP port 8091) through Windows Firewall on your Private network.
-Do NOT expose port 8091 to the public Internet.
+If the tablet cannot open port 8091, allow Python through Windows Firewall on the Private network, or allow TCP 8091. Do not expose this server to the public Internet.
 
-SYNC DESIGN
-The Windows control center is the master clock. It sends an absolute target timestamp to the sync server. The tablet estimates the PC/server clock offset and uses that target timestamp instead of starting a separate timer. This minimizes countdown drift between the two devices.
-
-IMPORTANT
-This integrated version is designed for the tablet and vMix PC to be on the same local network. It does not require a cloud account or Internet relay for synchronization.
+FILES
+- index.html = v18 teleprompter with central story library
+- control.html = vMix recording control center
+- sync_server.py = LAN server, countdown sync, and central story API
+- stories.json = shared story database created automatically
+- start_news_one_sync.bat = one-click launcher
+- manifest.webmanifest / service-worker.js / icons = app support files
