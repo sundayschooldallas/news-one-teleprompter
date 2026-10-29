@@ -12,7 +12,7 @@ body{display:flex;flex-direction:column}.top{height:46px;border-bottom:1px solid
 .library{position:fixed;inset:7% 7%;z-index:50;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none;overflow:auto}.library.open{display:block}.story{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #273147;padding:12px 0}.storyTitle{font-weight:900}.storyBtns{display:flex;gap:6px}.editor{position:fixed;inset:6%;z-index:60;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none}.editor.open{display:flex;flex-direction:column;gap:10px}.editor textarea{flex:1;resize:none;background:#050609;color:#fff;border:1px solid #39465b;border-radius:10px;padding:15px;font-size:20px}.titleInput{background:#111824;color:#fff;border:1px solid #39465b;border-radius:8px;padding:10px;font-size:18px}
 </style></head>
 <body>
-<div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v34 LAN SYNC</small></div><div id="sync" class="status warn">● CONNECTING</div></div>
+<div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v35 LAN SYNC</small></div><div id="sync" class="status warn">● CONNECTING</div></div>
 <div class="stage" id="stage">
   <div id="textWrap" class="textWrap"><div id="text" class="text"></div></div>
   <div id="count" class="count">5</div>
@@ -62,11 +62,14 @@ function hideMonitor(){
   countdownMode=false;
   $('monitor').classList.remove('show');
 }
+let vmixPreviewLoaded=false;
 function startVmixPreview(){
   const frame=$('vmixFrame');
   frame.style.display='block';
-  const desired=VMIX_PAGE+'?newsone='+Date.now();
-  if(frame.src!==desired) frame.src=desired;
+  if(!vmixPreviewLoaded){
+    vmixPreviewLoaded=true;
+    frame.src=VMIX_PAGE;
+  }
 }
 function setMonitorFlip(){monitorFlip=!monitorFlip;const t=monitorFlip?'scaleY(-1)':'none';$('vmixFrame').style.transform=t}
 $('flipMonitor').onclick=setMonitorFlip;$('closeMonitor').onclick=hideMonitor;
@@ -96,7 +99,7 @@ $('start').onclick=async()=>{
   }
 };
 $('stop').onclick=async()=>{
-  pause(); offset=0; $('count').classList.remove('show'); hideMonitor();
+  pause(); offset=0; $('count').classList.remove('show'); hideMonitor(); vmixPreviewLoaded=false;
   try{await fetch(PC+'/api/stop',{method:'POST',cache:'no-store'})}catch(_){}
   lastStateId=-1;
 };
@@ -153,28 +156,30 @@ async function poll(){
      if(j.command==='recording'){
        $('count').classList.remove('show');
        hideMonitor();
+       vmixPreviewLoaded=false;
        if(j.recording) play();
        else pause();
      }
      if(j.command==='idle'){
        $('count').classList.remove('show');
        hideMonitor();
+       vmixPreviewLoaded=false;
        pause();
      }
    }
 
    if(j.command==='countdown'){
      const rem=Math.max(0,Math.ceil((j.targetAt-Date.now())/1000));
+     // The countdown itself continues all the way to zero.
+     // vMix preview is shown only during the first part; at 5 seconds
+     // we hand the screen back to the teleprompter, but keep counting.
+     $('count').textContent=rem;
+     $('count').classList.add('show');
+     pause();
      if(rem>5){
-       $('count').textContent=rem;
-       $('count').classList.add('show');
        showMonitor();
-       pause();
      }else{
-       // Five seconds is the clean handoff point.
-       $('count').classList.remove('show');
        hideMonitor();
-       pause();
      }
    }
  }catch(e){
