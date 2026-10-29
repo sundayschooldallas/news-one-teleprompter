@@ -1,34 +1,26 @@
-NEWS ONE PRODUCTION v29
+NEWS ONE PRODUCTION v32
 
-This version fixes the vMix recording race and simplifies the tablet preview.
+IMPORTANT: News One synchronization has been moved from port 8091 to PORT 8093
+so it does not conflict with your existing pipeline services.
 
-START SEQUENCE:
-- Press START on tablet or Control Center.
-- The server sets the countdown target immediately.
-- While remaining time is > 5 seconds, tablet shows the vMix LiveLAN preview.
-- At 5 seconds, tablet switches to the teleprompter and remains PAUSED.
-- At 0, the server calls vMix StartRecording.
-- Only after vMix responds does the tablet enter RECORDING and begin scrolling.
+News One:
+  Sync server: 8093
+  Tablet: http://192.168.254.149:8093/index.html?v=32
+  Control: http://127.0.0.1:8093/control.html
 
-STOP:
-- STOP increments the server state id immediately.
-- The countdown worker sees the mismatch and aborts.
-- If a simultaneous vMix StartRecording call already returned success, the server immediately sends StopRecording.
-- STOP also clears the tablet countdown/preview.
+vMix:
+  Web/API: 8088
 
-PREVIEW:
-- Uses the vMix LiveLAN browser page at http://PC-IP:8088/livelan.
-- No external HLS library or CDN is required.
+This package does NOT manage or stop:
+  8000, 8002, 5173, 8010, 8011, 8012
 
-FILES:
-- sync_server.py
-- index.html
-- control.html
-- start_news_one_sync.bat
-- stories.json
+START:
+1. Close the current v31 News One server window with Ctrl+C.
+2. Extract v32 into a new folder.
+3. Run start_news_one_sync.bat.
+4. The black window must say:
+   News One Production sync server v32 running on port 8093
+5. On the tablet open:
+   http://192.168.254.149:8093/index.html?v=32
 
-Tablet:
-http://192.168.254.149:8091/index.html?v=29
-
-Control Center:
-http://127.0.0.1:8091/control.html
+Do not use the old 8091 URL.

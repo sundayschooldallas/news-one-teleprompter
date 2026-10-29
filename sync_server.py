@@ -1,7 +1,7 @@
 import json, os, time, threading, urllib.parse, urllib.request
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
-PORT = 8091
+PORT = 8093
 BASE = os.path.dirname(os.path.abspath(__file__))
 STORIES_FILE = os.path.join(BASE, "stories.json")
 
@@ -201,8 +201,8 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     if not os.path.exists(STORIES_FILE):
         save_stories([])
-    print("News One Production sync server v29 running on port 8091")
-    print("Control Center: http://127.0.0.1:8091/control.html")
-    print("Tablet Teleprompter: http://192.168.254.149:8091/index.html")
+    print("News One Production sync server v32 running on port 8093")
+    print("Control Center: http://127.0.0.1:8093/control.html")
+    print("Tablet Teleprompter: http://192.168.254.149:8093/index.html")
     print("Keep this window running while recording.")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
