@@ -202,7 +202,7 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     if not os.path.exists(STORIES_FILE):
         save_stories([])
-    print("News One Production sync server v36 running on port 8093")
+    print("News One Production sync server v37 running on port 8093")
     print("Control Center: http://127.0.0.1:8093/control.html")
     print("Tablet Teleprompter: http://192.168.254.149:8093/index.html")
     print("Keep this window running while recording.")

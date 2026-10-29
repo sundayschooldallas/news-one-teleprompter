@@ -1,22 +1,26 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>News One Production Teleprompter</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js"></script>
 <style>
 *{box-sizing:border-box}html,body{margin:0;background:#050609;color:#fff;font-family:Arial,Helvetica,sans-serif;height:100%;overflow:hidden}
 body{display:flex;flex-direction:column}.top{height:46px;border-bottom:1px solid #283247;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-weight:900;letter-spacing:1px}.brand small{display:block;font-size:9px;color:#8e9bb0;letter-spacing:1.5px;margin-top:2px}.status{font-size:13px}.ready{color:#55df8a}.bad{color:#ff4358}.warn{color:#ffcf5c}
 .stage{position:relative;flex:1;overflow:hidden;background:#020306;border-bottom:1px solid #273147;display:flex;align-items:flex-start;justify-content:center}
 .textWrap{position:absolute;left:5%;right:5%;top:0;transform-origin:center center;will-change:transform}.text{position:relative;white-space:pre-wrap;text-align:center;font-size:80px;font-weight:800;line-height:1.25;padding:0 0 80vh;top:42vh}
-.count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:min(22vw,220px);font-weight:900;background:transparent;z-index:40;text-shadow:0 4px 18px rgba(0,0,0,.9)}.count.show{display:flex}
-.monitor{position:absolute;inset:0;background:#000;z-index:30;display:none}.monitor.show{display:block}.monitor video{width:100%;height:100%;object-fit:contain;background:#000}.monitor iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}.vmixLabel{background:rgba(0,0,0,.65);padding:9px 12px;border-radius:9px;font-weight:900}.monitorBar{position:absolute;top:10px;right:10px;z-index:31;display:flex;gap:8px}.btn{border:1px solid #34435d;background:#101827;color:#fff;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}.btn.primary{background:#fff;color:#080b10}.btn.danger{background:#2a0e15;color:#ff6677}.btn.active{outline:2px solid #54a8ff}
+.count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:min(22vw,220px);font-weight:900;background:rgba(0,0,0,.7);z-index:40}.count.show{display:flex}
+.monitor{position:absolute;inset:0;background:#000;z-index:30;display:none}.monitor.show{display:block}.monitor video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:block}.vmixLabel{background:rgba(0,0,0,.65);padding:9px 12px;border-radius:9px;font-weight:900}.monitorBar{position:absolute;top:10px;right:10px;z-index:31;display:flex;gap:8px}.btn{border:1px solid #34435d;background:#101827;color:#fff;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}.btn.primary{background:#fff;color:#080b10}.btn.danger{background:#2a0e15;color:#ff6677}.btn.active{outline:2px solid #54a8ff}
 .controls{padding:10px;background:#0a0f18}.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.field{display:flex;align-items:center;gap:5px;color:#aab3c2;font-size:12px;font-weight:800}.num{min-width:58px;text-align:center;font-size:15px;color:#fff;border:1px solid #39465b;border-radius:8px;padding:8px;background:#111824}.help{text-align:center;color:#758094;font-size:10px;margin-top:7px}
 .library{position:fixed;inset:7% 7%;z-index:50;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none;overflow:auto}.library.open{display:block}.story{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #273147;padding:12px 0}.storyTitle{font-weight:900}.storyBtns{display:flex;gap:6px}.editor{position:fixed;inset:6%;z-index:60;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none}.editor.open{display:flex;flex-direction:column;gap:10px}.editor textarea{flex:1;resize:none;background:#050609;color:#fff;border:1px solid #39465b;border-radius:10px;padding:15px;font-size:20px}.titleInput{background:#111824;color:#fff;border:1px solid #39465b;border-radius:8px;padding:10px;font-size:18px}
 </style></head>
 <body>
-<div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v36 LAN SYNC</small></div><div id="sync" class="status warn">● CONNECTING</div></div>
+<div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v37 LAN SYNC</small></div><div id="sync" class="status warn">● CONNECTING</div></div>
 <div class="stage" id="stage">
   <div id="textWrap" class="textWrap"><div id="text" class="text"></div></div>
   <div id="count" class="count">5</div>
-  <div id="monitor" class="monitor"><iframe id="vmixFrame" src="" allow="autoplay"></iframe><div class="monitorBar"><span class="vmixLabel">vMix LIVE LAN</span><button class="btn" id="flipMonitor">↕ FLIP VERTICAL</button><button class="btn" id="closeMonitor">✕ CLOSE</button></div></div></div>
+  <div id="monitor" class="monitor">
+<video id="vmixVideo" playsinline muted autoplay controls="false"></video>
+<div class="monitorBar"><span class="vmixLabel">vMix LIVE LAN</span><button class="btn" id="flipMonitor">↕ FLIP VERTICAL</button><button class="btn" id="closeMonitor">✕ CLOSE</button></div>
+</div></div>
 </div>
 <div class="controls"><div class="row">
 <button class="btn" id="stories">▤ STORIES</button><button class="btn" id="edit">✎ EDIT SCRIPT</button><button class="btn primary" id="start">▶ START</button><button class="btn" id="pause">Ⅱ PAUSE / PLAY</button><button class="btn danger" id="stop">■ STOP</button><button class="btn" id="restart">↺ RESTART</button><button class="btn" id="mirror">⇄ MIRROR</button><button class="btn" id="full">⛶ FULL SCREEN</button><button class="btn" id="rotate">↻ ROTATE</button><button class="btn" id="flipPrompt">↕ FLIP VERTICAL</button>
@@ -62,16 +66,63 @@ function hideMonitor(){
   countdownMode=false;
   $('monitor').classList.remove('show');
 }
-let vmixPreviewLoaded=false;
+const VMIX_HLS='http://'+location.hostname+':8088/livelan/stream.m3u8';
+let vmixPreviewLoaded=false, hlsPlayer=null, vmixPreviewFailed=false;
+
 function startVmixPreview(){
-  const frame=$('vmixFrame');
-  frame.style.display='block';
-  if(!vmixPreviewLoaded){
-    vmixPreviewLoaded=true;
-    frame.src=VMIX_PAGE;
+  const video=$('vmixVideo');
+  video.style.display='block';
+  if(vmixPreviewLoaded)return;
+  vmixPreviewLoaded=true;
+  vmixPreviewFailed=false;
+
+  if(window.Hls && Hls.isSupported()){
+    hlsPlayer=new Hls({
+      enableWorker:true,
+      lowLatencyMode:false,
+      backBufferLength:10,
+      maxBufferLength:20
+    });
+    hlsPlayer.loadSource(VMIX_HLS);
+    hlsPlayer.attachMedia(video);
+    hlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>{
+      video.play().catch(()=>{});
+    });
+    hlsPlayer.on(Hls.Events.ERROR,(event,data)=>{
+      if(data && data.fatal){
+        vmixPreviewFailed=true;
+        $('sync').textContent='● VMIX PREVIEW ERROR';
+        $('sync').className='status bad';
+        console.error('vMix HLS error',data);
+      }
+    });
+  }else if(video.canPlayType('application/vnd.apple.mpegurl')){
+    video.src=VMIX_HLS;
+    video.play().catch(()=>{});
+  }else{
+    vmixPreviewFailed=true;
+    $('sync').textContent='● HLS NOT SUPPORTED';
+    $('sync').className='status bad';
   }
 }
-function setMonitorFlip(){monitorFlip=!monitorFlip;const t=monitorFlip?'scaleY(-1)':'none';$('vmixFrame').style.transform=t}
+
+function stopVmixPreview(){
+  const video=$('vmixVideo');
+  try{video.pause()}catch(_){}
+  if(hlsPlayer){
+    try{hlsPlayer.destroy()}catch(_){}
+    hlsPlayer=null;
+  }
+  video.removeAttribute('src');
+  video.load();
+  vmixPreviewLoaded=false;
+  vmixPreviewFailed=false;
+}
+function setMonitorFlip(){
+  monitorFlip=!monitorFlip;
+  const t=monitorFlip?'scaleY(-1)':'none';
+  $('vmixVideo').style.transform=t;
+}
 $('flipMonitor').onclick=setMonitorFlip;$('closeMonitor').onclick=hideMonitor;
 $('start').onclick=async()=>{
   // Start must NEVER begin scrolling locally. The server owns the countdown.
@@ -99,7 +150,7 @@ $('start').onclick=async()=>{
   }
 };
 $('stop').onclick=async()=>{
-  pause(); offset=0; $('count').classList.remove('show'); hideMonitor(); vmixPreviewLoaded=false;
+  pause(); offset=0; $('count').classList.remove('show'); hideMonitor(); stopVmixPreview();
   try{await fetch(PC+'/api/stop',{method:'POST',cache:'no-store'})}catch(_){}
   lastStateId=-1;
 };
@@ -156,14 +207,14 @@ async function poll(){
      if(j.command==='recording'){
        $('count').classList.remove('show');
        hideMonitor();
-       vmixPreviewLoaded=false;
+       stopVmixPreview();
        if(j.recording) play();
        else pause();
      }
      if(j.command==='idle'){
        $('count').classList.remove('show');
        hideMonitor();
-       vmixPreviewLoaded=false;
+       stopVmixPreview();
        pause();
      }
    }
