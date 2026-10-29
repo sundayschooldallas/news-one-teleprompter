@@ -7,7 +7,7 @@ body{display:flex;flex-direction:column}.top{height:46px;border-bottom:1px solid
 .stage{position:relative;flex:1;overflow:hidden;background:#020306;border-bottom:1px solid #273147;display:flex;align-items:flex-start;justify-content:center}
 .textWrap{position:absolute;left:5%;right:5%;top:0;transform-origin:center center;will-change:transform}.text{position:relative;white-space:pre-wrap;text-align:center;font-size:80px;font-weight:800;line-height:1.25;padding:0 0 80vh;top:42vh}
 .count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:min(22vw,220px);font-weight:900;background:rgba(0,0,0,.7);z-index:20}.count.show{display:flex}
-.monitor{position:absolute;inset:0;background:#000;z-index:30;display:none}.monitor.show{display:block}.monitor iframe{width:100%;height:100%;border:0}.monitorBar{position:absolute;top:10px;right:10px;z-index:31;display:flex;gap:8px}.btn{border:1px solid #34435d;background:#101827;color:#fff;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}.btn.primary{background:#fff;color:#080b10}.btn.danger{background:#2a0e15;color:#ff6677}.btn.active{outline:2px solid #54a8ff}
+.monitor{position:absolute;inset:0;background:#000;z-index:30;display:none}.monitor.show{display:block}.monitor video{width:100%;height:100%;object-fit:contain;background:#000}.monitor iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:none}.vmixLabel{background:rgba(0,0,0,.65);padding:9px 12px;border-radius:9px;font-weight:900}.monitorBar{position:absolute;top:10px;right:10px;z-index:31;display:flex;gap:8px}.btn{border:1px solid #34435d;background:#101827;color:#fff;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}.btn.primary{background:#fff;color:#080b10}.btn.danger{background:#2a0e15;color:#ff6677}.btn.active{outline:2px solid #54a8ff}
 .controls{padding:10px;background:#0a0f18}.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.field{display:flex;align-items:center;gap:5px;color:#aab3c2;font-size:12px;font-weight:800}.num{min-width:58px;text-align:center;font-size:15px;color:#fff;border:1px solid #39465b;border-radius:8px;padding:8px;background:#111824}.help{text-align:center;color:#758094;font-size:10px;margin-top:7px}
 .library{position:fixed;inset:7% 7%;z-index:50;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none;overflow:auto}.library.open{display:block}.story{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #273147;padding:12px 0}.storyTitle{font-weight:900}.storyBtns{display:flex;gap:6px}.editor{position:fixed;inset:6%;z-index:60;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none}.editor.open{display:flex;flex-direction:column;gap:10px}.editor textarea{flex:1;resize:none;background:#050609;color:#fff;border:1px solid #39465b;border-radius:10px;padding:15px;font-size:20px}.titleInput{background:#111824;color:#fff;border:1px solid #39465b;border-radius:8px;padding:10px;font-size:18px}
 </style></head>
@@ -28,10 +28,13 @@ body{display:flex;flex-direction:column}.top{height:46px;border-bottom:1px solid
 <div id="library" class="library"><div style="display:flex;justify-content:space-between;align-items:center"><h2>STORY LIBRARY</h2><div><button class="btn primary" id="newStory">＋ NEW STORY</button><button class="btn" id="closeLibrary">CLOSE</button></div></div><div id="storyList"></div></div>
 <div id="editor" class="editor"><input id="titleInput" class="titleInput" placeholder="Story title"><textarea id="editorText"></textarea><div><button class="btn primary" id="save">SAVE</button><button class="btn" id="cancel">CANCEL</button></div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <script>
 const $=id=>document.getElementById(id);
-const PC=location.origin, VMIX='http://'+location.hostname+':8088/livelan';
-$('vmix').src=VMIX;
+const PC=location.origin, VMIX_BASE='http://'+location.hostname+':8088';
+const VMIX_PAGE=VMIX_BASE+'/livelan';
+const VMIX_HLS=VMIX_BASE+'/livelan/stream.m3u8';
+let hls=null;
 let playing=false,offset=0,last=0,raf=0,flipPrompt=false,mirror=false,rotation=0,monitorFlip=false;
 let speed=+localStorage.n1speed||45,size=+localStorage.n1size||80,secs=+localStorage.n1secs||10;
 let currentStory=null, lastStateId=-1, countdownMode=false;
@@ -55,12 +58,47 @@ function frame(t){
 function play(){if(playing)return;playing=true;last=0; $('sync').textContent='● PROMPTING';$('sync').className='status bad';raf=requestAnimationFrame(frame)}
 function pause(){playing=false;last=0;cancelAnimationFrame(raf);$('sync').textContent='● PAUSED';$('sync').className='status'}
 function restart(){pause();offset=0;$('text').style.transform='translateY(0)';play()}
-function showMonitor(){ $('monitor').classList.add('show'); countdownMode=true; }
+function showMonitor(){
+  $('monitor').classList.add('show'); countdownMode=true;
+  startVmixPreview();
+}
 function hideMonitor(){ $('monitor').classList.remove('show'); countdownMode=false; }
-function setMonitorFlip(){monitorFlip=!monitorFlip;$('vmix').style.transform=monitorFlip?'scaleY(-1)':'none'}
+function startVmixPreview(){
+  const video=$('vmixVideo');
+  video.style.display='block';
+  $('vmixFrame').style.display='none';
+  video.src=VMIX_HLS;
+  if(window.Hls && Hls.isSupported()){
+    if(hls) hls.destroy();
+    hls=new Hls({lowLatencyMode:false});
+    hls.loadSource(VMIX_HLS);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));
+    hls.on(Hls.Events.ERROR,(e,d)=>{
+      if(d.fatal){
+        try{hls.destroy()}catch(_){}
+        hls=null;
+        $('vmixFrame').src=VMIX_PAGE;
+        $('vmixFrame').style.display='block';
+        video.style.display='none';
+      }
+    });
+  } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+    video.play().catch(()=>{});
+  } else {
+    $('vmixFrame').src=VMIX_PAGE;
+    $('vmixFrame').style.display='block';
+    video.style.display='none';
+  }
+}
+function setMonitorFlip(){monitorFlip=!monitorFlip;const t=monitorFlip?'scaleY(-1)':'none';$('vmixVideo').style.transform=t;$('vmixFrame').style.transform=t}
 $('flipMonitor').onclick=setMonitorFlip;$('closeMonitor').onclick=hideMonitor;
 $('start').onclick=async()=>{try{await fetch(PC+'/api/countdown',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seconds:secs})});}catch(e){alert('Sync server unavailable');}};
-$('stop').onclick=async()=>{pause();offset=0;hideMonitor();await fetch(PC+'/api/stop',{method:'POST'}).catch(()=>{});};
+$('stop').onclick=async()=>{
+  pause(); offset=0; $('count').classList.remove('show'); hideMonitor();
+  try{await fetch(PC+'/api/stop',{method:'POST',cache:'no-store'})}catch(_){}
+  lastStateId=-1;
+};
 $('pause').onclick=()=>playing?pause():play();
 $('restart').onclick=restart;
 $('mirror').onclick=()=>{mirror=!mirror;updatePromptTransform()};
@@ -97,19 +135,38 @@ async function poll(){
    const j=await (await fetch(PC+'/api/state?x='+Date.now(),{cache:'no-store'})).json();
    $('sync').textContent='● VMIX SYNC READY';$('sync').className='status ready';
    if(j.id!==lastStateId){lastStateId=j.id;
-      if(j.command==='countdown'){showMonitor();}
-      if(j.command==='recording'){hideMonitor();play();}
-      if(j.command==='idle'){hideMonitor();}
+      if(j.command==='countdown'){
+        // Countdown is a pre-roll monitor. At 5 seconds, remove the
+        // countdown overlay and hand the screen to the teleprompter.
+        showMonitor();
+      }
+      if(j.command==='recording'){
+        $('count').classList.remove('show');
+        hideMonitor();
+        play();
+      }
+      if(j.command==='idle'){
+        $('count').classList.remove('show');
+        hideMonitor();
+        pause();
+      }
    }
    if(j.command==='countdown'){
       const rem=Math.max(0,Math.ceil((j.targetAt-Date.now())/1000));
-      $('count').textContent=rem;
-      if(rem>5){showMonitor();$('count').classList.add('show')}
-      else if(rem>0){hideMonitor();$('count').classList.add('show')}
-      else{$('count').classList.remove('show');hideMonitor();play()}
+      if(rem>5){
+        showMonitor();
+        $('count').textContent=rem;
+        $('count').classList.add('show');
+      } else {
+        // Exactly at 5 seconds: switch cleanly to the teleprompter.
+        $('count').classList.remove('show');
+        hideMonitor();
+        if(!playing) play();
+      }
    }
  }catch(e){$('sync').textContent='● VMIX SYNC OFFLINE';$('sync').className='status bad'}
  setTimeout(poll,500);
 }
+$('count').classList.remove('show');
 render();loadStories();poll();
 </script></body></html>

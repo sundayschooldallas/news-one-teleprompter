@@ -5,6 +5,6 @@ body{margin:0;background:#080d16;color:#fff;font-family:Arial;padding:35px}.box{
 <script>
 const $=x=>document.getElementById(x);let last=-1;
 $('start').onclick=async()=>{let s=Math.max(0,Math.min(60,+$('secs').value||0));await fetch('/api/countdown',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seconds:s})})};
-$('stop').onclick=()=>fetch('/api/stop',{method:'POST'});
+$('stop').onclick=async()=>{await fetch('/api/stop',{method:'POST',cache:'no-store'});$('msg').textContent='STOP sent. Countdown cancelled and recording stopped if active.';};
 async function p(){try{let j=await (await fetch('/api/state?x='+Date.now(),{cache:'no-store'})).json();$('sync').textContent=j.recording?'● RECORDING':'● TABLET SYNC CONNECTED';$('sync').className='green';if(j.command==='countdown')$('count').textContent=Math.max(0,Math.ceil((j.targetAt-Date.now())/1000));else $('count').textContent=j.command==='recording'?'●':$('secs').value;$('msg').textContent=j.command==='recording'?(j.recording?'vMix recording active.':'Countdown reached zero; vMix did not confirm recording.'):'Set your countdown and press Start.'}catch(e){$('sync').textContent='● OFFLINE';$('sync').className='red'}setTimeout(p,300)}p();
 </script></body></html>

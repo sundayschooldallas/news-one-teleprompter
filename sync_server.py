@@ -138,9 +138,32 @@ class Handler(SimpleHTTPRequestHandler):
             return self.end_json({"ok": True, "state": state})
 
         if parsed.path == "/api/stop":
-            ok = vmix("StopRecording")
-            set_state("idle", 0, 0, False)
-            return self.end_json({"ok": True, "vmix": ok, "state": state})
+            # Increment the state id first. Any countdown worker holding the
+            # previous id will see the mismatch and abort before StartRecording.
+            with state_lock:
+                state["id"] += 1
+                state["command"] = "idle"
+                state["seconds"] = 0
+                state["targetAt"] = 0
+                state["serverNow"] = int(time.time()*1000)
+                was_recording = bool(state.get("recording"))
+                state["recording"] = False
+            ok = True
+            if was_recording:
+                ok = vmix("StopRecording")
+            return self.end_json({"ok": True, "vmix": ok, "cancelled": True, "state": state})
+
+        if parsed.path == "/api/cancel-countdown":
+            # Cancel only. Do NOT touch vMix recording unless it is already
+            # active. This lets the operator safely abort before zero.
+            with state_lock:
+                state["id"] += 1
+                state["command"] = "idle"
+                state["seconds"] = 0
+                state["targetAt"] = 0
+                state["serverNow"] = int(time.time()*1000)
+                state["recording"] = False
+            return self.end_json({"ok": True, "cancelled": True, "state": state})
 
         if parsed.path == "/api/ping-vmix":
             # A lightweight API check. Start/stop are not issued here.
