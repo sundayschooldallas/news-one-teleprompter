@@ -1,4 +1,4 @@
-NEWS ONE PRODUCTION v19 — CENTRAL STORY LIBRARY
+NEWS ONE PRODUCTION v20 — CENTRAL STORY LIBRARY
 
 WHAT CHANGED
 - Stories are now stored centrally on the Windows News One sync server.

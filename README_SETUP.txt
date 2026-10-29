@@ -1,4 +1,4 @@
-NEWS ONE PRODUCTION v19 — CENTRAL STORY LIBRARY
+NEWS ONE PRODUCTION v20 — CENTRAL STORIES + VMIX MONITOR
 
 WHAT CHANGED
 - Stories are now stored centrally on the Windows News One sync server.
@@ -37,7 +37,7 @@ FIREWALL
 If the tablet cannot open port 8091, allow Python through Windows Firewall on the Private network, or allow TCP 8091. Do not expose this server to the public Internet.
 
 FILES
-- index.html = v18 teleprompter with central story library
+- index.html = teleprompter with central story library, vMix monitor, and LAN countdown sync
 - control.html = vMix recording control center
 - sync_server.py = LAN server, countdown sync, and central story API
 - stories.json = shared story database created automatically

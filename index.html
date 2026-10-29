@@ -2,6 +2,27 @@
 <link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#0b1018"><link rel="apple-touch-icon" href="./icons/icon-192.png">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#05070b;color:white;font-family:Segoe UI,Arial;overflow:hidden}.app{height:100vh;display:grid;grid-template-rows:64px 1fr auto}.top{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#0b1018;border-bottom:1px solid #293140}.brand{font-weight:900;letter-spacing:2px}.brand small{display:block;color:#929daf;font-size:10px;margin-top:4px}.status{font-weight:900}.stage{position:relative;overflow:hidden}.guide{display:none!important}.text{position:absolute;top:25%;left:6%;right:6%;padding:0 0 60vh;text-align:center;font-size:64px;line-height:1.4;font-weight:650;white-space:pre-wrap}.count{display:none;position:absolute;inset:0;z-index:10;background:#05070bf2;place-items:center;font-size:min(35vw,300px);font-weight:900}.count.show{display:grid}.controls{background:#0b1018;border-top:1px solid #293140;padding:12px}.row{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}button{background:#171e2a;color:white;border:1px solid #344055;border-radius:11px;padding:11px 14px;font-weight:800;cursor:pointer}.primary{background:white;color:#080b10}.field{display:flex;align-items:center;gap:6px;color:#aab3c2;font-size:12px;font-weight:700}input[type=range]{width:110px}input[type=number]{width:58px;background:#101620;color:white;border:1px solid #344055;border-radius:8px;padding:8px}.help{text-align:center;color:#758094;font-size:11px;margin-top:8px}textarea{display:none;position:fixed;z-index:30;inset:7%;background:#0b1018;color:white;border:1px solid #46536a;border-radius:18px;padding:24px;font:20px/1.5 Segoe UI;resize:none}.editorBtns{display:none;position:fixed;z-index:31;top:8%;right:8%;gap:7px}body.editing textarea,body.editing .editorBtns{display:flex}.mirror .text{transform:scaleX(-1)}
+
+/* vMix Program Monitor + LAN sync */
+.monitorBtn,.monitorClose{padding:7px 10px;font-size:11px;background:#172132;color:#f4f7fb;border:1px solid #344055;border-radius:8px;cursor:pointer}
+.monitorBtn:hover,.monitorClose:hover{background:#243149}
+.syncBadge{font-size:10px;font-weight:900;color:#9aa6b8;display:flex;align-items:center;gap:7px}
+.syncDot{width:8px;height:8px;border-radius:50%;background:#697386;box-shadow:0 0 0 4px #69738620}
+.syncDot.ok{background:#33d17a;box-shadow:0 0 0 4px #33d17a22}
+.syncDot.bad{background:#ff4358;box-shadow:0 0 0 4px #ff435822}
+.vmixPanel{display:none;background:#080d15;border-bottom:1px solid #293140;padding:8px 12px}
+.vmixPanel.open{display:block}
+.vmixPanelTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
+.vmixPanelTop strong{font-size:11px;letter-spacing:.08em}
+.vmixPanel iframe{display:block;width:100%;height:min(30vh,280px);border:1px solid #344055;border-radius:10px;background:#000}
+.vmixHint{font-size:10px;color:#778398;margin-top:5px}
+.remoteCount{display:none;position:absolute;inset:0;z-index:20;background:#05070bf4;place-items:center;font-size:min(35vw,300px);font-weight:900}
+.remoteCount.show{display:grid}
+body.reading .vmixPanel{display:none!important}
+body.reading .controls .row > *{display:none!important}
+body.reading .controls #pause,body.reading .controls #stop{display:flex!important}
+body.reading .controls{max-height:none!important;padding:8px 8px max(8px,env(safe-area-inset-bottom))!important;overflow:visible!important}
+@media(max-width:650px){.vmixPanel iframe{height:190px}}
 </style>
 <style id="stable-v9">
 /* v10: immediate first line, no guide line, 400px size. */
@@ -49,10 +70,10 @@ body.reading #orientationPreview{grid-row:auto}
 body.reading .controls #rotateNext{display:flex!important;align-items:center;justify-content:center;min-width:135px;background:#213958;border-color:#7198ce}
 body.reading .controls .field:has(#rotation){display:none!important}
 body:not(.reading) .controls #rotateNext{background:#213958;border-color:#7198ce}
-</style><style id="v18-single-rotate">#rotationDropdownField{display:none!important}body.reading #rotationDropdownField{display:none!important}</style></head><body><div class="app"><div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v15</small></div><div id="status" class="status">READY</div></div>
-<div id="stage" class="stage"><div id="text" class="text">Click EDIT SCRIPT below and paste your teleprompter script.</div><div id="count" class="count">5</div></div>
+</style><style id="v18-single-rotate">#rotationDropdownField{display:none!important}body.reading #rotationDropdownField{display:none!important}</style></head><body><div class="app"><div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v20 LAN SYNC</small></div><div style="display:flex;align-items:center;gap:10px"><button id="monitorBtn" type="button" class="monitorBtn">▣ VMIX MONITOR</button><div class="syncBadge"><span id="syncDot" class="syncDot"></span><span id="syncStatus">VMIX SYNC OFFLINE</span></div><div id="status" class="status">READY</div></div></div>
+<div id="vmixPanel" class="vmixPanel"><div class="vmixPanelTop"><strong>VMIX PROGRAM MONITOR</strong><button id="closeMonitor" type="button" class="monitorClose">CLOSE</button></div><iframe id="vmixFrame" title="vMix LiveLAN monitor" src="about:blank" allow="autoplay; fullscreen"></iframe><div class="vmixHint">Live vMix Program feed from your Windows PC. LiveLAN may have several seconds of latency.</div></div><div id="stage" class="stage"><div id="text" class="text">Click EDIT SCRIPT below and paste your teleprompter script.</div><div id="count" class="count">5</div><div id="remoteCount" class="remoteCount">5</div></div>
 <div id="wakeIndicator" class="wakeIndicator" role="status" aria-live="polite"></div><div id="orientationPreview" class="orientationPreview"><div class="previewHeading"><b>LIVE ORIENTATION PREVIEW</b><span id="orientationLabel">0° · Normal</span></div><div class="previewSample"><span id="sampleWord">NEWS ONE</span></div><small>Tap ROTATE to cycle 0°, 90°, 180°, and 270°. The preview updates immediately.</small></div>
-<div class="controls"><div class="row"><button id="library">▤ STORIES</button><button id="edit">✎ EDIT SCRIPT</button><button id="start" class="primary">▶ START</button><button id="pause">Ⅱ PAUSE / PLAY</button><button id="stop">■ STOP</button><button id="restart">↺ RESTART</button><button id="mirror">⇄ MIRROR</button><button id="full">⛶ FULL SCREEN</button><button id="rotateNext" type="button" aria-label="Rotate to next orientation">↻ ROTATE → 90°</button><span class="field" id="rotationDropdownField" hidden aria-hidden="true"><select id="rotation" aria-label="Rotation angle"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></span><button id="flipVertical">↕ FLIP VERTICAL</button><span class="field">SPEED <input id="speed" type="range" min="5" max="150" value="45"><b id="sv">45</b></span><span class="field">SIZE <input id="size" type="range" min="24" max="1000" step="2" value="80"><input id="sizeExact" type="number" min="24" max="1000" step="1" value="80" aria-label="Exact font size in pixels" style="width:84px"/> px</span><span class="field">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span></div><div class="help">Space = pause/play • ↑/↓ = speed • +/- = font size • Click screen = pause/play • Settings and script are remembered</div></div></div>
+<div class="controls"><div class="row"><button id="library">▤ STORIES</button><button id="edit">✎ EDIT SCRIPT</button><button id="start" class="primary">▶ START</button><button id="pause">Ⅱ PAUSE / PLAY</button><button id="stop">■ STOP</button><button id="restart">↺ RESTART</button><button id="mirror">⇄ MIRROR</button><button id="full">⛶ FULL SCREEN</button><button id="rotateNext" type="button" aria-label="Rotate to next orientation">↻ ROTATE → 90°</button><span class="field" id="rotationDropdownField" hidden aria-hidden="true"><select id="rotation" aria-label="Rotation angle"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></span><button id="flipVertical">↕ FLIP VERTICAL</button><span class="field">SPEED <input id="speed" type="range" min="5" max="150" value="45"><b id="sv">45</b></span><span class="field">SIZE <input id="size" type="range" min="24" max="1000" step="2" value="80"><input id="sizeExact" type="number" min="24" max="1000" step="1" value="80" aria-label="Exact font size in pixels" style="width:84px"/> px</span><span class="field">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span><input id="syncUrl" type="hidden" value="/api/state"></div><div class="help">Space = pause/play • ↑/↓ = speed • +/- = font size • Click screen = pause/play • Settings and script are remembered</div></div></div>
 <div class="editorOverlay" id="editorOverlay"><div class="editorHeader"><strong>STORY EDITOR</strong><button id="cancel">✕ CLOSE</button></div><label for="storyTitle">STORY TITLE</label><input id="storyTitle" placeholder="Enter a clear story title"><label for="editor">SCRIPT CONTENT</label><textarea id="editor" placeholder="Type or paste your narration here..."></textarea><div class="editorFooter"><button id="save" class="primary">✓ SAVE STORY</button></div></div>
 <div id="libraryPanel" class="libraryPanel" role="dialog" aria-label="Saved stories"><div class="libraryInner"><div class="libraryHeader"><h2>Saved Stories</h2><button id="closeLibrary">✕ CLOSE</button></div><p class="libraryHint">Stories are saved on the News One Production PC and shared with every tablet on this LAN. You can still export a backup.</p><div class="libraryActions"><button id="newStory">＋ NEW STORY</button><button id="exportStories">↓ BACKUP STORIES</button><button id="importStories">↑ RESTORE BACKUP</button><input type="file" id="importFile" accept=".json,application/json" hidden></div><div id="storyList" class="storyList"></div></div></div>
 <style>
@@ -60,6 +81,17 @@ body:not(.reading) .controls #rotateNext{background:#213958;border-color:#7198ce
 </style>
 <script>
 const $=x=>document.getElementById(x);let playing=false,last=0,offset=0,raf,ct;
+/* LAN vMix sync: Windows Control Center is the master clock. */
+let syncTimer=null,syncOffset=0,lastSyncId=0,remoteTarget=0,remoteCommand='';
+function syncEndpoint(){const v=$('syncUrl')?.value?.trim();return v||'/api/state'}
+function setSync(ok,msg){$('syncDot').classList.toggle('ok',ok);$('syncDot').classList.toggle('bad',!ok);$('syncStatus').textContent=msg}
+async function pollSync(){try{const t0=Date.now();const r=await fetch(syncEndpoint()+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);const st=await r.json();const t1=Date.now();syncOffset=st.serverNow-((t0+t1)/2);setSync(true,st.command==='idle'?'VMIX SYNC READY':'VMIX SYNC READY');if(st.id&&st.id!==lastSyncId){lastSyncId=st.id;handleRemoteCommand(st)}}catch(e){setSync(false,'VMIX SYNC OFFLINE')}}
+function localTarget(serverTs){return serverTs-syncOffset}
+function handleRemoteCommand(st){remoteCommand=st.command||'';if(remoteCommand==='countdown'){remoteTarget=localTarget(st.targetAt);startRemoteCountdown(remoteTarget)}else if(remoteCommand==='stop'){stopRemote()}else if(remoteCommand==='cancel'){cancelRemote()}}
+function startRemoteCountdown(target){clearInterval(ct);pause();document.body.classList.remove('reading');$('count').classList.remove('show');$('remoteCount').classList.add('show');$('status').textContent='VMIX COUNTDOWN';function tick(){const ms=target-Date.now();const n=Math.max(0,Math.ceil(ms/1000));$('remoteCount').textContent=String(n).padStart(2,'0');if(ms<=0){clearInterval(ct);$('remoteCount').classList.remove('show');offset=0;$('text').style.top='25%';play()}}tick();ct=setInterval(tick,50)}
+function stopRemote(){clearInterval(ct);$('remoteCount').classList.remove('show');pause();document.body.classList.remove('reading');offset=0;$('text').style.top='25%';$('status').textContent='READY'}
+function cancelRemote(){clearInterval(ct);$('remoteCount').classList.remove('show');pause();document.body.classList.remove('reading');$('status').textContent='COUNTDOWN CANCELLED'}
+function startSyncPolling(){if(syncTimer)clearInterval(syncTimer);pollSync();syncTimer=setInterval(pollSync,250)}
 let screenLock=null, wakeRequestPending=false;
 async function requestScreenAwake(){
  if(!playing || document.visibilityState!=='visible')return;
@@ -245,5 +277,9 @@ async function bootstrapStoryLibrary(){
 $('editor').value=localStorage.getItem('n1text')||'';
 bootstrapStoryLibrary();
 $('speed').value=localStorage.getItem('n1speed')||45;$('size').value=Math.max(24,Math.min(1000,Number(localStorage.getItem('n1size'))||80));$('secs').value=localStorage.getItem('n1secs')||5;sync();$('rotation').value=localStorage.getItem('n1angle')||'0';updateOrientation();
-if ('serviceWorker' in navigator && location.protocol === 'https:') {window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(console.warn));}
+$('monitorBtn').onclick=()=>{const panel=$('vmixPanel');panel.classList.toggle('open');if(panel.classList.contains('open'))$('vmixFrame').src='http://'+location.hostname+':8088/livelan'};
+$('closeMonitor').onclick=()=>{$('vmixPanel').classList.remove('open');$('vmixFrame').src='about:blank'};
+$('syncUrl').value=localStorage.getItem('n1syncUrl')||'/api/state';
+startSyncPolling();
+if ('serviceWorker' in navigator && location.protocol === 'https:') {window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=20').catch(console.warn));}
 </script></body></html>
