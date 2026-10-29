@@ -8,7 +8,7 @@ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-PORT = 8090
+PORT = 8091
 
 state_lock = threading.Lock()
 state = {

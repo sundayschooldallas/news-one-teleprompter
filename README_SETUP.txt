@@ -27,16 +27,16 @@ SETUP ON WINDOWS vMix COMPUTER
 3. Double-click start_news_one_sync.bat.
 4. Leave that black command window running while recording.
 5. It will display a URL such as:
-   http://192.168.1.25:8090/index.html
+   http://192.168.1.25:8091/index.html
 
 OPEN THE CONTROL CENTER ON WINDOWS
 Open:
-   http://127.0.0.1:8090/control.html
+   http://127.0.0.1:8091/control.html
 
 OPEN THE TELEPROMPTER ON THE ANDROID TABLET
 Make sure the tablet is on the SAME Wi-Fi/LAN as the Windows vMix computer.
 Open the tablet URL shown by sync_server.py, for example:
-   http://192.168.1.25:8090/index.html
+   http://192.168.1.25:8091/index.html
 
 You can then use Chrome's menu -> Add to Home screen to make a tablet shortcut.
 
@@ -55,8 +55,8 @@ VMIX
 - For the monitor, vMix LiveLAN must be enabled/started.
 
 FIREWALL
-If the tablet cannot connect to port 8090, allow Python (or TCP port 8090) through Windows Firewall on your Private network.
-Do NOT expose port 8090 to the public Internet.
+If the tablet cannot connect to port 8091, allow Python (or TCP port 8091) through Windows Firewall on your Private network.
+Do NOT expose port 8091 to the public Internet.
 
 SYNC DESIGN
 The Windows control center is the master clock. It sends an absolute target timestamp to the sync server. The tablet estimates the PC/server clock offset and uses that target timestamp instead of starting a separate timer. This minimizes countdown drift between the two devices.
