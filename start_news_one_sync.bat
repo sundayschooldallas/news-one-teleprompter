@@ -1,8 +1,8 @@
 @echo off
-title News One Production v33 Sync Server - PORT 8093
+title News One Production v34 Sync Server - PORT 8093
 cd /d "%~dp0"
 echo.
-echo Starting News One Production v33 from:
+echo Starting News One Production v34 from:
 echo %CD%
 echo.
 echo News One sync uses PORT 8093.
