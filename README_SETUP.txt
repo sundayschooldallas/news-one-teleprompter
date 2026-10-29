@@ -27,7 +27,7 @@ SETUP ON WINDOWS vMix COMPUTER
 3. Double-click start_news_one_sync.bat.
 4. Leave that black command window running while recording.
 5. It will display a URL such as:
-   http://192.168.1.25:8091/index.html
+   http://192.168.254.149:8091/index.html
 
 OPEN THE CONTROL CENTER ON WINDOWS
 Open:
@@ -36,7 +36,7 @@ Open:
 OPEN THE TELEPROMPTER ON THE ANDROID TABLET
 Make sure the tablet is on the SAME Wi-Fi/LAN as the Windows vMix computer.
 Open the tablet URL shown by sync_server.py, for example:
-   http://192.168.1.25:8091/index.html
+   http://192.168.254.149:8091/index.html
 
 You can then use Chrome's menu -> Add to Home screen to make a tablet shortcut.
 
@@ -52,6 +52,8 @@ VMIX
 - Keep vMix Web Controller enabled on port 8088.
 - The control center keeps using 127.0.0.1:8088 on the Windows PC.
 - The tablet's VMIX MONITOR button uses the Windows PC's IP and port 8088.
+
+Confirmed LiveLAN URL for this setup: http://192.168.254.149:8088/livelan
 - For the monitor, vMix LiveLAN must be enabled/started.
 
 FIREWALL
