@@ -1,45 +1,20 @@
-NEWS ONE PRODUCTION v20 — CENTRAL STORY LIBRARY
+NEWS ONE PRODUCTION v23
 
-WHAT CHANGED
-- Stories are now stored centrally on the Windows News One sync server.
-- The Windows computer and Android tablet use the same story library.
-- Saving on one device makes the story available on the other device.
-- Rename and Delete operate on the shared library.
-- Existing browser-local stories are automatically migrated to the server when the server library is empty.
-- Backup/Restore remains available.
-- Existing vMix countdown/recording synchronization remains in place.
+1. Stop the old server with Ctrl+C.
+2. Extract this whole folder.
+3. Run start_news_one_sync.bat.
+4. Windows control: http://127.0.0.1:8091/control.html
+5. Tablet: http://YOUR-PC-IP:8091/index.html
 
-SETUP
-1. Put this entire folder somewhere permanent, for example:
-   C:\NewsOneProductionSync
-
-2. Double-click:
-   start_news_one_sync.bat
-
-3. Keep the black Command Prompt window open. It should say:
-   News One Production sync server running on port 8091
-
-4. On the Windows computer open:
-   http://127.0.0.1:8091/control.html
-
-5. On the Android tablet open the LAN address printed by the server, for example:
-   http://192.168.254.149:8091/index.html
-
-IMPORTANT
-For the shared story library, use the local 8091 address on both devices. Do not use the github.io copy for the live teleprompter. A GitHub-hosted HTTPS page cannot directly use the Windows PC's HTTP API without browser mixed-content restrictions.
-
-STORY WORKFLOW
-- On the Windows computer: STORIES -> NEW STORY -> enter title/script -> SAVE STORY.
-- On the tablet: STORIES -> the saved story will appear.
-- If a story is saved or renamed on the tablet, it is saved to the same central library.
-
-FIREWALL
-If the tablet cannot open port 8091, allow Python through Windows Firewall on the Private network, or allow TCP 8091. Do not expose this server to the public Internet.
-
-FILES
-- index.html = v18 teleprompter with central story library
-- control.html = vMix recording control center
-- sync_server.py = LAN server, countdown sync, and central story API
-- stories.json = shared story database created automatically
-- start_news_one_sync.bat = one-click launcher
-- manifest.webmanifest / service-worker.js / icons = app support files
+Features:
+- Central story library on the Windows sync server
+- Sync status based on actual /api/state success
+- vMix recording triggered server-side at countdown zero
+- Tablet shows vMix LiveLAN during countdown
+- At 5 seconds remaining it switches to teleprompter
+- Teleprompter starts at zero
+- Button-based speed and font controls with visible numbers
+- Mouse wheel speed adjustment
+- Separate vMix monitor vertical flip
+- Teleprompter vertical flip preserves visible travel direction
+- Existing stories are stored in stories.json

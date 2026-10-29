@@ -1,293 +1,115 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>News One Production Teleprompter</title>
-<link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#0b1018"><link rel="apple-touch-icon" href="./icons/icon-192.png">
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>News One Production Teleprompter</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#05070b;color:white;font-family:Segoe UI,Arial;overflow:hidden}.app{height:100vh;display:grid;grid-template-rows:64px 1fr auto}.top{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#0b1018;border-bottom:1px solid #293140}.brand{font-weight:900;letter-spacing:2px}.brand small{display:block;color:#929daf;font-size:10px;margin-top:4px}.status{font-weight:900}.stage{position:relative;overflow:hidden}.guide{display:none!important}.text{position:absolute;top:25%;left:6%;right:6%;padding:0 0 60vh;text-align:center;font-size:64px;line-height:1.4;font-weight:650;white-space:pre-wrap}.count{display:none;position:absolute;inset:0;z-index:10;background:#05070bf2;place-items:center;font-size:min(35vw,300px);font-weight:900}.count.show{display:grid}.controls{background:#0b1018;border-top:1px solid #293140;padding:12px}.row{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}button{background:#171e2a;color:white;border:1px solid #344055;border-radius:11px;padding:11px 14px;font-weight:800;cursor:pointer}.primary{background:white;color:#080b10}.field{display:flex;align-items:center;gap:6px;color:#aab3c2;font-size:12px;font-weight:700}input[type=range]{width:110px}input[type=number]{width:58px;background:#101620;color:white;border:1px solid #344055;border-radius:8px;padding:8px}.help{text-align:center;color:#758094;font-size:11px;margin-top:8px}textarea{display:none;position:fixed;z-index:30;inset:7%;background:#0b1018;color:white;border:1px solid #46536a;border-radius:18px;padding:24px;font:20px/1.5 Segoe UI;resize:none}.editorBtns{display:none;position:fixed;z-index:31;top:8%;right:8%;gap:7px}body.editing textarea,body.editing .editorBtns{display:flex}.mirror .text{transform:scaleX(-1)}
+*{box-sizing:border-box}html,body{margin:0;background:#050609;color:#fff;font-family:Arial,Helvetica,sans-serif;height:100%;overflow:hidden}
+body{display:flex;flex-direction:column}.top{height:46px;border-bottom:1px solid #283247;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-weight:900;letter-spacing:1px}.brand small{display:block;font-size:9px;color:#8e9bb0;letter-spacing:1.5px;margin-top:2px}.status{font-size:13px}.ready{color:#55df8a}.bad{color:#ff4358}.warn{color:#ffcf5c}
+.stage{position:relative;flex:1;overflow:hidden;background:#020306;border-bottom:1px solid #273147;display:flex;align-items:flex-start;justify-content:center}
+.textWrap{position:absolute;left:5%;right:5%;top:0;transform-origin:center center;will-change:transform}.text{position:relative;white-space:pre-wrap;text-align:center;font-size:80px;font-weight:800;line-height:1.25;padding:0 0 80vh;top:42vh}
+.count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:min(22vw,220px);font-weight:900;background:rgba(0,0,0,.7);z-index:20}.count.show{display:flex}
+.monitor{position:absolute;inset:0;background:#000;z-index:30;display:none}.monitor.show{display:block}.monitor iframe{width:100%;height:100%;border:0}.monitorBar{position:absolute;top:10px;right:10px;z-index:31;display:flex;gap:8px}.btn{border:1px solid #34435d;background:#101827;color:#fff;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}.btn.primary{background:#fff;color:#080b10}.btn.danger{background:#2a0e15;color:#ff6677}.btn.active{outline:2px solid #54a8ff}
+.controls{padding:10px;background:#0a0f18}.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.field{display:flex;align-items:center;gap:5px;color:#aab3c2;font-size:12px;font-weight:800}.num{min-width:58px;text-align:center;font-size:15px;color:#fff;border:1px solid #39465b;border-radius:8px;padding:8px;background:#111824}.help{text-align:center;color:#758094;font-size:10px;margin-top:7px}
+.library{position:fixed;inset:7% 7%;z-index:50;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none;overflow:auto}.library.open{display:block}.story{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #273147;padding:12px 0}.storyTitle{font-weight:900}.storyBtns{display:flex;gap:6px}.editor{position:fixed;inset:6%;z-index:60;background:#0b1018;border:1px solid #3b4960;border-radius:16px;padding:18px;display:none}.editor.open{display:flex;flex-direction:column;gap:10px}.editor textarea{flex:1;resize:none;background:#050609;color:#fff;border:1px solid #39465b;border-radius:10px;padding:15px;font-size:20px}.titleInput{background:#111824;color:#fff;border:1px solid #39465b;border-radius:8px;padding:10px;font-size:18px}
+</style></head>
+<body>
+<div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v23 LAN SYNC</small></div><div id="sync" class="status warn">● CONNECTING</div></div>
+<div class="stage" id="stage">
+  <div id="textWrap" class="textWrap"><div id="text" class="text"></div></div>
+  <div id="count" class="count">5</div>
+  <div id="monitor" class="monitor"><iframe id="vmix" src="http://192.168.254.149:8088/livelan" allow="autoplay"></iframe><div class="monitorBar"><button class="btn" id="flipMonitor">↕ FLIP VERTICAL</button><button class="btn" id="closeMonitor">✕ CLOSE</button></div></div>
+</div>
+<div class="controls"><div class="row">
+<button class="btn" id="stories">▤ STORIES</button><button class="btn" id="edit">✎ EDIT SCRIPT</button><button class="btn primary" id="start">▶ START</button><button class="btn" id="pause">Ⅱ PAUSE / PLAY</button><button class="btn danger" id="stop">■ STOP</button><button class="btn" id="restart">↺ RESTART</button><button class="btn" id="mirror">⇄ MIRROR</button><button class="btn" id="full">⛶ FULL SCREEN</button><button class="btn" id="rotate">↻ ROTATE</button><button class="btn" id="flipPrompt">↕ FLIP VERTICAL</button>
+<span class="field">SPEED <button class="btn" id="slow">−</button><span class="num" id="speedNum">45</span><button class="btn" id="fast">+</button></span>
+<span class="field">FONT <button class="btn" id="small">−</button><span class="num" id="sizeNum">80 px</span><button class="btn" id="large">+</button></span>
+<span class="field">COUNTDOWN <span class="num" id="secsNum">10 sec</span></span>
+</div><div class="help">Mouse wheel while scrolling = speed • settings are remembered • countdown: monitor until 5 seconds, then teleprompter • at 0 vMix recording starts</div></div>
 
-/* vMix Program Monitor + LAN sync */
-.monitorBtn,.monitorClose{padding:7px 10px;font-size:11px;background:#172132;color:#f4f7fb;border:1px solid #344055;border-radius:8px;cursor:pointer}
-.monitorBtn:hover,.monitorClose:hover{background:#243149}
-.syncBadge{font-size:10px;font-weight:900;color:#9aa6b8;display:flex;align-items:center;gap:7px}
-.syncDot{width:8px;height:8px;border-radius:50%;background:#697386;box-shadow:0 0 0 4px #69738620}
-.syncDot.ok{background:#33d17a;box-shadow:0 0 0 4px #33d17a22}
-.syncDot.bad{background:#ff4358;box-shadow:0 0 0 4px #ff435822}
-.vmixPanel{display:none;background:#080d15;border-bottom:1px solid #293140;padding:8px 12px}
-.vmixPanel.open{display:block}
-.vmixPanelTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
-.vmixPanelTop strong{font-size:11px;letter-spacing:.08em}
-.vmixFrameWrap{width:100%;height:min(30vh,280px);overflow:hidden;border:1px solid #344055;border-radius:10px;background:#000}.vmixPanel iframe{display:block;width:100%;height:100%;border:0;background:#000;transform-origin:center center;transition:transform .15s ease}.vmixFrameWrap.flipped iframe{transform:scaleY(-1)}
-.vmixHint{font-size:10px;color:#778398;margin-top:5px}
-.stepper{display:flex;align-items:center;gap:5px}.stepper button{min-width:36px;padding:8px 10px;font-size:18px;line-height:1}.valueBox{min-width:62px;text-align:center;padding:7px 8px;border:1px solid #344055;border-radius:8px;background:#101620;color:#fff;font-variant-numeric:tabular-nums}.vmixPanel.countdownMonitor{display:flex;position:fixed;inset:0;z-index:80;padding:14px;flex-direction:column;background:#05070bf5}.vmixPanel.countdownMonitor .vmixFrameWrap{height:calc(100dvh - 74px);flex:1}.vmixPanel.countdownMonitor .vmixHint{display:none}.vmixPanel.countdownMonitor .vmixPanelTop{margin-bottom:8px}.vmixPanel.countdownMonitor .vmixPanelTop strong{font-size:13px}.vmixPanel.countdownMonitor #closeMonitor{display:none}
+<div id="library" class="library"><div style="display:flex;justify-content:space-between;align-items:center"><h2>STORY LIBRARY</h2><div><button class="btn primary" id="newStory">＋ NEW STORY</button><button class="btn" id="closeLibrary">CLOSE</button></div></div><div id="storyList"></div></div>
+<div id="editor" class="editor"><input id="titleInput" class="titleInput" placeholder="Story title"><textarea id="editorText"></textarea><div><button class="btn primary" id="save">SAVE</button><button class="btn" id="cancel">CANCEL</button></div></div>
 
-.remoteCount{display:none;position:absolute;inset:0;z-index:20;background:#05070bf4;place-items:center;font-size:min(35vw,300px);font-weight:900}
-.remoteCount.show{display:grid}
-body.reading .vmixPanel{display:none!important}
-body.reading .controls .row > *{display:none!important}
-body.reading .controls #pause,body.reading .controls #stop{display:flex!important}
-body.reading .controls{max-height:none!important;padding:8px 8px max(8px,env(safe-area-inset-bottom))!important;overflow:visible!important}
-@media(max-width:650px){.vmixPanel iframe{height:190px}}
-</style>
-<style id="stable-v9">
-/* v10: immediate first line, no guide line, 400px size. */
-.guide{display:none!important}
-.app{height:100dvh;grid-template-rows:54px minmax(0,1fr) auto auto}
-.stage{min-height:0;overflow:hidden}
-.orientationPreview{background:#111a29;border-top:1px solid #334155;padding:8px 12px;display:grid;gap:5px}
-.previewHeading{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:#dcecff}
-.previewSample{height:84px;display:grid;place-items:center;background:#070b13;border:1px solid #43526c;border-radius:10px;overflow:hidden}
-#sampleWord{font-size:25px;font-weight:900;display:inline-block;white-space:nowrap;transition:transform .15s}
-.orientationPreview small{font-size:11px;color:#aab3c2}
-.controls{padding:8px;max-height:36dvh;overflow-y:auto}
-.controls .row{gap:7px}
-.controls button{padding:10px 9px}
-.controls select{padding:8px;background:#192638;color:white;border:1px solid #52617b;border-radius:8px}
-.text.sideways{width:min(80vh,85vw);left:50%;right:auto;margin-left:calc(-1 * min(80vh,85vw) / 2)}
-.mirror .text{transform:none}
-.editorOverlay{display:none;position:fixed;inset:0;z-index:100;background:#0b1018;padding:12px;flex-direction:column;gap:10px;overflow-y:auto}
-body.editing .editorOverlay{display:flex}
-.editorHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none}
-.editorOverlay label{font-size:13px;font-weight:800;color:#cfe5ff;flex:none}
-.editorOverlay input{display:block;position:static;flex:none;width:100%;font-size:17px;padding:14px;color:white;background:#192638;border:1px solid #61b8ff;border-radius:10px}
-.editorOverlay textarea,body.editing .editorOverlay textarea{display:block!important;position:static!important;inset:auto!important;z-index:auto!important;flex:1 0 200px!important;width:100%!important;min-height:200px!important;resize:vertical!important;padding:15px!important;border-radius:12px!important;font-size:18px!important;box-sizing:border-box!important}
-.editorFooter{position:static;flex:none;display:flex;justify-content:flex-end;padding-bottom:env(safe-area-inset-bottom)}
-.editorFooter button{min-width:150px}
-@media(max-width:650px){.app{grid-template-rows:48px minmax(0,1fr) auto auto}.brand{font-size:11px}.brand small{font-size:9px}.top{padding:6px 10px}.previewSample{height:65px}.orientationPreview{padding:6px 10px}.controls{max-height:38dvh}.editorFooter button{width:100%;padding:15px}}
-</style>
-<style id="v10-reading-fix">.stage .text{padding-top:0!important;top:25%;line-height:1.22!important}.guide{display:none!important}.controls input#size{width:135px}.controls input#sizeExact{font-size:15px}</style><style id="v11-reading-mode">
-/* Minimal on-screen controls while reading or paused. */
-body.reading #orientationPreview{display:none!important}
-body.reading .controls .row > *{display:none!important}
-body.reading .controls #restart,body.reading .controls #stop,body.reading .controls #pause,body.reading .controls .field:has(#speed),body.reading .controls .field:has(#rotation){display:flex!important}
-body.reading .controls #restart,body.reading .controls #stop,body.reading .controls #pause{align-items:center;justify-content:center}
-body.reading .controls{max-height:none!important;padding:8px 8px max(8px,env(safe-area-inset-bottom))!important;overflow:visible!important}
-body.reading .controls .row{flex-wrap:wrap;gap:7px}
-body.reading .controls .help{display:none!important}
-body.reading .controls .field:has(#speed),body.reading .controls .field.stepper{flex:0 0 auto;justify-content:center}body.reading .controls .field:has(#rotation){flex:0 0 auto;justify-content:center}
-body.reading .controls .stepper{font-size:12px}
-body.reading .app{grid-template-rows:48px minmax(0,1fr) auto!important}
-body.reading .stage{grid-row:2;min-height:0}
-body.reading .controls{grid-row:3}
-body.reading #orientationPreview{grid-row:auto}
-@media(max-width:520px){body.reading .controls button{font-size:12px;padding:10px 9px}body.reading .controls .field:has(#speed){font-size:12px}}
-</style><style id="v12-font-controls">.stepper button{display:inline-flex!important;align-items:center;justify-content:center}.stepper .valueBox{width:auto!important;font-size:15px!important}body:not(.reading) .controls .field.stepper{flex-wrap:nowrap}#text{overflow-wrap:anywhere}</style><style id="v14-controls">.wakeIndicator{position:fixed;top:2px;right:6px;z-index:8;color:#94f5bc;font-size:10px;pointer-events:none;opacity:.85}body.reading .controls .field:has(#rotation){display:flex!important}body.reading .controls select#rotation{font-size:16px;min-width:76px;padding:10px 8px}body.reading .controls .row{align-items:center}</style><style id="v15-rotate-button">
-body.reading .controls #rotateNext{display:flex!important;align-items:center;justify-content:center;min-width:135px;background:#213958;border-color:#7198ce}
-body.reading .controls .field:has(#rotation){display:none!important}
-body:not(.reading) .controls #rotateNext{background:#213958;border-color:#7198ce}
-</style><style id="v18-single-rotate">#rotationDropdownField{display:none!important}body.reading #rotationDropdownField{display:none!important}</style></head><body><div class="app"><div class="top"><div class="brand">N1 • NEWS ONE PRODUCTION<small>SMART TELEPROMPTER · v21 LAN SYNC</small></div><div style="display:flex;align-items:center;gap:10px"><button id="monitorBtn" type="button" class="monitorBtn">▣ VMIX MONITOR</button><div class="syncBadge"><span id="syncDot" class="syncDot"></span><span id="syncStatus">VMIX SYNC OFFLINE</span></div><div id="status" class="status">READY</div></div></div>
-<div id="vmixPanel" class="vmixPanel"><div class="vmixPanelTop"><strong>VMIX PROGRAM MONITOR</strong><div style="display:flex;gap:6px;align-items:center"><button id="flipMonitor" type="button" class="monitorClose">↕ FLIP VERTICAL</button><button id="closeMonitor" type="button" class="monitorClose">CLOSE</button></div></div><div id="vmixFrameWrap" class="vmixFrameWrap"><iframe id="vmixFrame" title="vMix LiveLAN monitor" src="about:blank" allow="autoplay; fullscreen"></iframe></div><div class="vmixHint">Live vMix Program feed from your Windows PC. LiveLAN may have several seconds of latency.</div></div><div id="stage" class="stage"><div id="text" class="text">Click EDIT SCRIPT below and paste your teleprompter script.</div><div id="count" class="count">5</div><div id="remoteCount" class="remoteCount">5</div></div>
-<div id="wakeIndicator" class="wakeIndicator" role="status" aria-live="polite"></div><div id="orientationPreview" class="orientationPreview"><div class="previewHeading"><b>LIVE ORIENTATION PREVIEW</b><span id="orientationLabel">0° · Normal</span></div><div class="previewSample"><span id="sampleWord">NEWS ONE</span></div><small>Tap ROTATE to cycle 0°, 90°, 180°, and 270°. The preview updates immediately.</small></div>
-<div class="controls"><div class="row"><button id="library">▤ STORIES</button><button id="edit">✎ EDIT SCRIPT</button><button id="start" class="primary">▶ START</button><button id="pause">Ⅱ PAUSE / PLAY</button><button id="stop">■ STOP</button><button id="restart">↺ RESTART</button><button id="mirror">⇄ MIRROR</button><button id="full">⛶ FULL SCREEN</button><button id="rotateNext" type="button" aria-label="Rotate to next orientation">↻ ROTATE → 90°</button><span class="field" id="rotationDropdownField" hidden aria-hidden="true"><select id="rotation" aria-label="Rotation angle"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></span><button id="flipVertical">↕ FLIP VERTICAL</button><span class="field stepper"><span>SPEED</span><button id="speedDown" type="button">−</button><b id="sv" class="valueBox">45</b><button id="speedUp" type="button">+</button></span><span class="field stepper"><span>FONT</span><button id="sizeDown" type="button">−</button><b id="sizeExact" class="valueBox">80 px</b><button id="sizeUp" type="button">+</button></span><span class="field">COUNTDOWN <input id="secs" type="number" min="0" max="30" value="5"> sec</span><input id="syncUrl" type="hidden" value="/api/state"></div><div class="help">Space = pause/play • ↑/↓ = speed • +/- = font size • Click screen = pause/play • Settings and script are remembered</div></div></div>
-<div class="editorOverlay" id="editorOverlay"><div class="editorHeader"><strong>STORY EDITOR</strong><button id="cancel">✕ CLOSE</button></div><label for="storyTitle">STORY TITLE</label><input id="storyTitle" placeholder="Enter a clear story title"><label for="editor">SCRIPT CONTENT</label><textarea id="editor" placeholder="Type or paste your narration here..."></textarea><div class="editorFooter"><button id="save" class="primary">✓ SAVE STORY</button></div></div>
-<div id="libraryPanel" class="libraryPanel" role="dialog" aria-label="Saved stories"><div class="libraryInner"><div class="libraryHeader"><h2>Saved Stories</h2><button id="closeLibrary">✕ CLOSE</button></div><p class="libraryHint">Stories are saved on the News One Production PC and shared with every tablet on this LAN. You can still export a backup.</p><div class="libraryActions"><button id="newStory">＋ NEW STORY</button><button id="exportStories">↓ BACKUP STORIES</button><button id="importStories">↑ RESTORE BACKUP</button><input type="file" id="importFile" accept=".json,application/json" hidden></div><div id="storyList" class="storyList"></div></div></div>
-<style>
-.libraryPanel{display:none;position:fixed;inset:0;z-index:50;background:#05070bef;padding:4vh 4vw;overflow:auto}.libraryPanel.open{display:block}.libraryInner{max-width:850px;margin:auto;background:#101620;border:1px solid #344055;border-radius:18px;padding:24px}.libraryHeader,.libraryActions,.storyItem{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.libraryHeader h2{margin:0}.libraryHint{color:#aab3c2;font-size:13px}.libraryActions{justify-content:flex-start;margin:18px 0}.storyList{display:grid;gap:10px}.storyItem{border:1px solid #344055;border-radius:12px;padding:12px}.storyInfo{flex:1;min-width:180px}.storyInfo strong{display:block;overflow-wrap:anywhere}.storyInfo small{color:#aab3c2}.storyBtns{display:flex;gap:6px;flex-wrap:wrap}.storyBtns button{padding:9px 12px}.empty{color:#aab3c2;padding:25px;text-align:center}
-</style>
 <script>
-const $=x=>document.getElementById(x);let playing=false,last=0,offset=0,raf,ct;
-/* LAN vMix sync: Windows Control Center is the master clock. */
-let syncTimer=null,syncOffset=0,lastSyncId=0,remoteTarget=0,remoteCommand='';
-function syncEndpoint(){const v=$('syncUrl')?.value?.trim();return v||'/api/state'}
-function setSync(ok,msg){$('syncDot').classList.toggle('ok',ok);$('syncDot').classList.toggle('bad',!ok);$('syncStatus').textContent=msg}
-async function pollSync(){try{const t0=Date.now();const r=await fetch(syncEndpoint()+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);const st=await r.json();const t1=Date.now();syncOffset=st.serverNow-((t0+t1)/2);setSync(true,st.command==='idle'?'VMIX SYNC READY':'VMIX SYNC READY');if(st.id&&st.id!==lastSyncId){lastSyncId=st.id;handleRemoteCommand(st)}}catch(e){setSync(false,'VMIX SYNC OFFLINE')}}
-function localTarget(serverTs){return serverTs-syncOffset}
-function handleRemoteCommand(st){remoteCommand=st.command||'';if(remoteCommand==='countdown'){remoteTarget=localTarget(st.targetAt);startRemoteCountdown(remoteTarget)}else if(remoteCommand==='stop'){stopRemote()}else if(remoteCommand==='cancel'){cancelRemote()}}
-function startRemoteCountdown(target){clearInterval(ct);pause();document.body.classList.remove('reading');$('count').classList.remove('show');$('remoteCount').classList.remove('show');$('status').textContent='VMIX COUNTDOWN';const panel=$('vmixPanel');panel.classList.add('open','countdownMonitor');$('vmixFrame').src='http://'+location.hostname+':8088/livelan';applyMonitorFlip();let switched=false;function tick(){const ms=target-Date.now();const n=Math.max(0,Math.ceil(ms/1000));if(!switched && n<=5){switched=true;panel.classList.remove('open','countdownMonitor');$('vmixFrame').src='about:blank';$('remoteCount').classList.add('show');}if(switched)$('remoteCount').textContent=String(n).padStart(2,'0');if(ms<=0){clearInterval(ct);panel.classList.remove('open','countdownMonitor');$('vmixFrame').src='about:blank';$('remoteCount').classList.remove('show');offset=0;$('text').style.top='25%';play()}}tick();ct=setInterval(tick,50)}
-function stopRemote(){clearInterval(ct);$('remoteCount').classList.remove('show');$('vmixPanel').classList.remove('open','countdownMonitor');$('vmixFrame').src='about:blank';pause();document.body.classList.remove('reading');offset=0;$('text').style.top='25%';$('status').textContent='READY'}
-function cancelRemote(){clearInterval(ct);$('remoteCount').classList.remove('show');$('vmixPanel').classList.remove('open','countdownMonitor');$('vmixFrame').src='about:blank';pause();document.body.classList.remove('reading');$('status').textContent='COUNTDOWN CANCELLED'}
-function startSyncPolling(){if(syncTimer)clearInterval(syncTimer);pollSync();syncTimer=setInterval(pollSync,250)}
-let screenLock=null, wakeRequestPending=false;
-async function requestScreenAwake(){
- if(!playing || document.visibilityState!=='visible')return;
- if(!('wakeLock' in navigator)){setWakeIndicator('Screen awake unavailable');return}
- if(wakeRequestPending || (screenLock && !screenLock.released))return;
- wakeRequestPending=true;
+const $=id=>document.getElementById(id);
+const PC=location.origin, VMIX='http://'+location.hostname+':8088/livelan';
+$('vmix').src=VMIX;
+let playing=false,offset=0,last=0,raf=0,flipPrompt=false,mirror=false,rotation=0,monitorFlip=false;
+let speed=+localStorage.n1speed||45,size=+localStorage.n1size||80,secs=+localStorage.n1secs||10;
+let currentStory=null, lastStateId=-1, countdownMode=false;
+
+function render(){ $('speedNum').textContent=speed; $('sizeNum').textContent=size+' px'; $('text').style.fontSize=size+'px'; localStorage.n1speed=speed;localStorage.n1size=size;localStorage.n1secs=secs; updatePromptTransform(); }
+function updatePromptTransform(){
+  let sx=mirror?-1:1, sy=flipPrompt?-1:1;
+  $('textWrap').style.transform=`rotate(${rotation}deg) scale(${sx},${sy})`;
+}
+function frame(t){
+  if(!playing)return;
+  if(!last)last=t;
+  offset += (t-last)/1000*speed;
+  last=t;
+  // When vertically flipped, invert the internal travel so the visible
+  // reading direction remains downward instead of disappearing upward.
+  const visualOffset = flipPrompt ? -offset : offset;
+  $('text').style.transform=`translateY(${-visualOffset}px)`;
+  raf=requestAnimationFrame(frame);
+}
+function play(){if(playing)return;playing=true;last=0; $('sync').textContent='● PROMPTING';$('sync').className='status bad';raf=requestAnimationFrame(frame)}
+function pause(){playing=false;last=0;cancelAnimationFrame(raf);$('sync').textContent='● PAUSED';$('sync').className='status'}
+function restart(){pause();offset=0;$('text').style.transform='translateY(0)';play()}
+function showMonitor(){ $('monitor').classList.add('show'); countdownMode=true; }
+function hideMonitor(){ $('monitor').classList.remove('show'); countdownMode=false; }
+function setMonitorFlip(){monitorFlip=!monitorFlip;$('vmix').style.transform=monitorFlip?'scaleY(-1)':'none'}
+$('flipMonitor').onclick=setMonitorFlip;$('closeMonitor').onclick=hideMonitor;
+$('start').onclick=async()=>{try{await fetch(PC+'/api/countdown',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seconds:secs})});}catch(e){alert('Sync server unavailable');}};
+$('stop').onclick=async()=>{pause();offset=0;hideMonitor();await fetch(PC+'/api/stop',{method:'POST'}).catch(()=>{});};
+$('pause').onclick=()=>playing?pause():play();
+$('restart').onclick=restart;
+$('mirror').onclick=()=>{mirror=!mirror;updatePromptTransform()};
+$('rotate').onclick=()=>{rotation=(rotation+90)%360;updatePromptTransform()};
+$('flipPrompt').onclick=()=>{flipPrompt=!flipPrompt;offset=0;updatePromptTransform()};
+$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+$('slow').onclick=()=>{speed=Math.max(5,speed-1);render()};$('fast').onclick=()=>{speed=Math.min(160,speed+1);render()};
+$('small').onclick=()=>{size=Math.max(28,size-2);render()};$('large').onclick=()=>{size=Math.min(180,size+2);render()};
+document.addEventListener('wheel',e=>{if(!playing)return;e.preventDefault();speed=Math.max(5,Math.min(160,speed+(e.deltaY<0?1:-1)));render()},{passive:false});
+
+function openEditor(story){currentStory=story||null;$('titleInput').value=story?.title||'';$('editorText').value=story?.content||'';$('editor').classList.add('open')}
+$('edit').onclick=()=>openEditor(currentStory);
+$('cancel').onclick=()=>$('editor').classList.remove('open');
+$('newStory').onclick=()=>openEditor(null);
+$('save').onclick=async()=>{
+  const title=$('titleInput').value.trim(),content=$('editorText').value;
+  if(!title){alert('Enter a story title');return}
+  const story={id:currentStory?.id||('story_'+Date.now()),title,content,updatedAt:new Date().toISOString()};
+  const r=await fetch(PC+'/api/story/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({story})});
+  const j=await r.json(); if(!j.ok){alert(j.error||'Save failed');return}
+  currentStory=story;$('text').textContent=content;$('editor').classList.remove('open');loadStories();
+};
+async function loadStories(){
+  try{let j=await (await fetch(PC+'/api/stories?x='+Date.now(),{cache:'no-store'})).json();renderStories(j.stories||[]);if(!currentStory&&j.stories?.length){currentStory=j.stories[0];$('text').textContent=currentStory.content}}catch(e){}
+}
+function renderStories(list){
+  $('storyList').innerHTML='';
+  list.forEach(s=>{let d=document.createElement('div');d.className='story';d.innerHTML='<div><div class="storyTitle"></div><small>'+new Date(s.updatedAt||Date.now()).toLocaleString()+'</small></div><div class="storyBtns"><button class="btn open">OPEN</button><button class="btn edit">EDIT</button><button class="btn danger del">DELETE</button></div>';d.querySelector('.storyTitle').textContent=s.title;d.querySelector('.open').onclick=()=>{currentStory=s;$('text').textContent=s.content;$('library').classList.remove('open')};d.querySelector('.edit').onclick=()=>openEditor(s);d.querySelector('.del').onclick=async()=>{if(confirm('Delete '+s.title+'?')){await fetch(PC+'/api/story/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s.id})});loadStories()}};$('storyList').appendChild(d)});
+}
+$('stories').onclick=()=>{$('library').classList.add('open');loadStories()};$('closeLibrary').onclick=()=>$('library').classList.remove('open');
+
+async function poll(){
  try{
-   const lock=await navigator.wakeLock.request('screen');
-   if(!playing || document.visibilityState!=='visible'){await lock.release();return}
-   screenLock=lock;
-   setWakeIndicator('Screen awake');
-   lock.addEventListener('release',()=>{
-     if(screenLock===lock)screenLock=null;
-     if(playing && document.visibilityState==='visible')setWakeIndicator('Screen awake released');
-   },{once:true});
- }catch(e){console.warn('Wake Lock failed',e);setWakeIndicator('Screen awake blocked')}
- finally{wakeRequestPending=false}
+   const j=await (await fetch(PC+'/api/state?x='+Date.now(),{cache:'no-store'})).json();
+   $('sync').textContent='● VMIX SYNC READY';$('sync').className='status ready';
+   if(j.id!==lastStateId){lastStateId=j.id;
+      if(j.command==='countdown'){showMonitor();}
+      if(j.command==='recording'){hideMonitor();play();}
+      if(j.command==='idle'){hideMonitor();}
+   }
+   if(j.command==='countdown'){
+      const rem=Math.max(0,Math.ceil((j.targetAt-Date.now())/1000));
+      $('count').textContent=rem;
+      if(rem>5){showMonitor();$('count').classList.add('show')}
+      else if(rem>0){hideMonitor();$('count').classList.add('show')}
+      else{$('count').classList.remove('show');hideMonitor();play()}
+   }
+ }catch(e){$('sync').textContent='● VMIX SYNC OFFLINE';$('sync').className='status bad'}
+ setTimeout(poll,500);
 }
-async function releaseScreenAwake(){
- const lock=screenLock;screenLock=null;
- if(lock && !lock.released)try{await lock.release()}catch(e){console.warn(e)}
- setWakeIndicator('');
-}
-function setWakeIndicator(msg){
- const el=$('wakeIndicator');if(el)el.textContent=msg;
-}
-document.addEventListener('visibilitychange',()=>{
- if(document.visibilityState==='visible' && playing)requestScreenAwake();
-});
-document.addEventListener('fullscreenchange',()=>{
- if(document.visibilityState==='visible' && playing)requestScreenAwake();
-});
-
-let mirrorX=localStorage.getItem('n1mirrorX')==='1',flipY=localStorage.getItem('n1flipY')==='1';
-function savePrefs(){localStorage.setItem('n1text',$('editor').value);localStorage.setItem('n1speed',$('speed').value);localStorage.setItem('n1size',$('size').value);localStorage.setItem('n1secs',$('secs').value)}
-function sync(){ $('text').style.fontSize=$('size').value+'px';$('sv').textContent=$('speed').value;$('sizeExact').textContent=$('size').value+' px';savePrefs()}
-function updateOrientation(){
- const a=Number($('rotation').value);
- const fx=mirrorX?-1:1,fy=flipY?-1:1;
- $('sampleWord').style.transform=`rotate(${a}deg) scale(${fx},${fy})`;
- $('orientationLabel').textContent=a+'°'+(mirrorX?' · Mirror':'')+(flipY?' · Vertical flip':''); const next=(a+90)%360; $('rotateNext').textContent='↻ ROTATE → '+next+'°'; $('rotateNext').setAttribute('aria-label','Rotate from '+a+' degrees to '+next+' degrees');
- $('text').style.transform=`rotate(${a}deg) scale(${fx},${fy})`;
- $('text').style.transformOrigin='center center';
- $('text').classList.toggle('sideways',a===90||a===270);
- localStorage.setItem('n1angle',a);localStorage.setItem('n1mirrorX',mirrorX?'1':'0');localStorage.setItem('n1flipY',flipY?'1':'0');
-}
-function frame(t){if(!playing)return;if(!last)last=t;offset+=(t-last)/1000*+$('speed').value;last=t;const dir=flipY?-1:1;$('text').style.top=`calc(25% - ${offset*dir}px)`;raf=requestAnimationFrame(frame)}
-function play(){if(playing)return;document.body.classList.add('reading');playing=true;requestScreenAwake();last=0;$('status').textContent='● PROMPTING';$('status').style.color='#ff4358';raf=requestAnimationFrame(frame)}
-function pause(){playing=false;releaseScreenAwake();last=0;cancelAnimationFrame(raf);$('status').textContent='PAUSED';$('status').style.color='white'}
-function start(){pause();document.body.classList.remove('reading');offset=0;$('text').style.top='25%';let n=Math.max(0,Math.min(30,parseInt($('secs').value)||0));if(!n)return play();$('count').textContent=n;$('count').classList.add('show');$('status').textContent='COUNTDOWN';const panel=$('vmixPanel');panel.classList.add('open','countdownMonitor');$('vmixFrame').src='http://'+location.hostname+':8088/livelan';applyMonitorFlip();let switched=false;clearInterval(ct);ct=setInterval(()=>{n--;if(!switched&&n<=5){switched=true;panel.classList.remove('open','countdownMonitor');$('vmixFrame').src='about:blank';$('count').classList.add('show')}$('count').textContent=n;if(n<=0){clearInterval(ct);$('count').classList.remove('show');play()}},1000)}
-$('edit').onclick=()=>{pause();document.body.classList.add('editing')};$('save').onclick=async()=>{if(await saveStory())document.body.classList.remove('editing')};$('cancel').onclick=()=>document.body.classList.remove('editing');$('start').onclick=start;$('pause').onclick=()=>playing?pause():play();$('restart').onclick=()=>{pause();offset=0;$('text').style.top='25%';play()};$('stop').onclick=()=>{clearInterval(ct);$('count').classList.remove('show');$('remoteCount').classList.remove('show');$('vmixPanel').classList.remove('open','countdownMonitor');$('vmixFrame').src='about:blank';pause();document.body.classList.remove('reading');offset=0;$('text').style.top='25%';$('status').textContent='READY';$('status').style.color='white'};$('mirror').onclick=()=>{mirrorX=!mirrorX;updateOrientation()};$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();$('rotation').onchange=updateOrientation;$('rotateNext').onclick=()=>{const angles=[0,90,180,270];const current=Number($('rotation').value)||0;$('rotation').value=String(angles[(angles.indexOf(current)+1)%angles.length]);updateOrientation()};$('flipVertical').onclick=()=>{flipY=!flipY;updateOrientation()};$('speedDown').onclick=()=>changeSpeed(-1);$('speedUp').onclick=()=>changeSpeed(1);$('sizeDown').onclick=()=>changeSize(-2);$('sizeUp').onclick=()=>changeSize(2);$('secs').onchange=savePrefs;$('stage').onclick=()=>playing?pause():play();
-document.addEventListener('keydown',e=>{if(document.body.classList.contains('editing'))return;if(e.code==='Space'){e.preventDefault();playing?pause():play()}if(e.key==='ArrowUp'){e.preventDefault();changeSpeed(1)}if(e.key==='ArrowDown'){e.preventDefault();changeSpeed(-1)}if(e.key==='+'||e.key==='='){e.preventDefault();changeSize(2)}if(e.key==='-'||e.key==='_'){e.preventDefault();changeSize(-2)}});
-
-function changeSpeed(delta){$('speed').value=Math.max(5,Math.min(150,+$('speed').value+delta));sync()}
-function changeSize(delta){$('size').value=Math.max(24,Math.min(1000,+$('size').value+delta));sync()}
-
-/* LIVE MOUSE-WHEEL SPEED CONTROL
-   While the teleprompter is scrolling:
-   - wheel up   = +1 px/sec
-   - wheel down = -1 px/sec
-   - Shift + wheel = +/-5 px/sec
-   The page itself will not scroll, and the exact speed shown beside
-   SPEED is updated and saved immediately.
-*/
-document.addEventListener('wheel',e=>{
-  if(document.body.classList.contains('editing') || !playing)return;
-  e.preventDefault();
-  const step=e.shiftKey?5:1;
-  const direction=e.deltaY<0?1:-1;
-  changeSpeed(direction*step);
-},{passive:false});
-// CENTRAL STORY LIBRARY — shared by the Windows PC and tablet through sync_server.py.
-const STORY_KEY='n1NamedStoriesV1',ACTIVE_KEY='n1ActiveStoryV1';
-const STORIES_API='/api/stories';
-let serverStories=[];
-
-function localStories(){try{const v=JSON.parse(localStorage.getItem(STORY_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
-function cacheStories(v){try{localStorage.setItem(STORY_KEY,JSON.stringify(v))}catch(e){console.warn('Could not cache stories locally',e)}}
-
-async function getStories(){
-  try{
-    const r=await fetch(STORIES_API+'?t='+Date.now(),{cache:'no-store'});
-    if(!r.ok)throw new Error('Story server '+r.status);
-    const data=await r.json();
-    serverStories=Array.isArray(data.stories)?data.stories:[];
-    cacheStories(serverStories);
-    return serverStories;
-  }catch(e){
-    console.warn('Central story library unavailable; using local cache.',e);
-    serverStories=localStories();
-    return serverStories;
-  }
-}
-
-async function putStory(story){
-  try{
-    const r=await fetch(STORIES_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({story})});
-    if(!r.ok)throw new Error('Story server '+r.status);
-    const data=await r.json();
-    serverStories=Array.isArray(data.stories)?data.stories:serverStories;
-    cacheStories(serverStories);
-    return true;
-  }catch(e){
-    console.warn('Central save failed; saving local copy.',e);
-    const all=localStories();const i=all.findIndex(x=>x.id===story.id);if(i>=0)all[i]=story;else all.push(story);cacheStories(all);serverStories=all;
-    alert('The central story server could not be reached. The story was saved on this device only. Make sure the News One sync server is running.');
-    return false;
-  }
-}
-
-async function putStoriesBulk(stories){
-  try{
-    const r=await fetch(STORIES_API+'/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stories})});
-    if(!r.ok)throw new Error('Story server '+r.status);
-    const data=await r.json();serverStories=Array.isArray(data.stories)?data.stories:stories;cacheStories(serverStories);return true;
-  }catch(e){cacheStories(stories);serverStories=stories;console.warn(e);return false}
-}
-
-async function deleteStoryRemote(id){
-  try{
-    const r=await fetch(STORIES_API,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
-    if(!r.ok)throw new Error('Story server '+r.status);
-    const data=await r.json();serverStories=Array.isArray(data.stories)?data.stories:serverStories;cacheStories(serverStories);return true;
-  }catch(e){console.warn(e);return false}
-}
-
-let activeStory=localStorage.getItem(ACTIVE_KEY)||'';
-
-async function saveStory(){
-  let title=$('storyTitle').value.trim();
-  if(!title){alert('Enter a story title before saving.');$('storyTitle').focus();return false}
-  let content=$('editor').value;
-  if(!content.trim()){alert('Enter your script before saving.');return false}
-  let stories=await getStories();
-  let existing=stories.find(x=>x.id===activeStory);
-  let duplicate=stories.find(x=>x.title.toLowerCase()===title.toLowerCase()&&x.id!==activeStory);
-  if(duplicate){alert('A different story already has that title. Choose another title or open the existing story.');return false}
-  let id=existing?existing.id:'story_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-  const story={id,title,content,updatedAt:new Date().toISOString()};
-  if(!(await putStory(story)))return false;
-  activeStory=id;localStorage.setItem(ACTIVE_KEY,id);$('text').textContent=content;savePrefs();$('status').textContent='SAVED: '+title;return true;
-}
-
-async function openStory(id){
-  const stories=await getStories();const story=stories.find(x=>x.id===id);if(!story)return;
-  pause();offset=0;$('text').style.top='25%';activeStory=id;localStorage.setItem(ACTIVE_KEY,id);$('storyTitle').value=story.title;$('editor').value=story.content;$('text').textContent=story.content;$('libraryPanel').classList.remove('open');savePrefs();
-}
-
-async function renderStories(){
-  let box=$('storyList');box.replaceChildren();let stories=(await getStories()).slice().sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
-  if(!stories.length){let e=document.createElement('div');e.className='empty';e.textContent='No saved stories yet. Choose NEW STORY, enter a title and script, then save.';box.append(e)}
-  for(const s of stories){
-    let item=document.createElement('div');item.className='storyItem';let info=document.createElement('div');info.className='storyInfo';let title=document.createElement('strong');title.textContent=s.title;let date=document.createElement('small');date.textContent=s.updatedAt?'Last saved: '+new Date(s.updatedAt).toLocaleString():'';info.append(title,date);let buttons=document.createElement('div');buttons.className='storyBtns';
-    let open=document.createElement('button');open.textContent='OPEN';open.onclick=()=>openStory(s.id);
-    let rename=document.createElement('button');rename.textContent='RENAME';rename.onclick=async()=>{let name=prompt('New story title:',s.title);if(name===null)return;name=name.trim();if(!name)return alert('Title cannot be empty.');let all=await getStories();if(all.some(x=>x.id!==s.id&&x.title.toLowerCase()===name.toLowerCase()))return alert('That title is already used.');let v=all.find(x=>x.id===s.id);v.title=name;v.updatedAt=new Date().toISOString();if(await putStory(v)){if(activeStory===s.id)$('storyTitle').value=name;await renderStories()}};
-    let del=document.createElement('button');del.textContent='DELETE';del.onclick=async()=>{if(!confirm('Delete story "'+s.title+'"? This cannot be undone unless you have a backup.'))return;if(await deleteStoryRemote(s.id)){if(activeStory===s.id){activeStory='';localStorage.removeItem(ACTIVE_KEY)}await renderStories()}};
-    buttons.append(open,rename,del);item.append(info,buttons);box.append(item);
-  }
-}
-
-$('library').onclick=async()=>{pause();await renderStories();$('libraryPanel').classList.add('open')};$('closeLibrary').onclick=()=>$('libraryPanel').classList.remove('open');
-$('newStory').onclick=()=>{pause();activeStory='';localStorage.removeItem(ACTIVE_KEY);$('storyTitle').value='';$('editor').value='';$('text').textContent='Click EDIT SCRIPT to enter a new story.';$('libraryPanel').classList.remove('open');document.body.classList.add('editing')};
-$('exportStories').onclick=async()=>{let stories=await getStories();let data=JSON.stringify({app:'News One Production Teleprompter',version:2,exportedAt:new Date().toISOString(),stories},null,2);let url=URL.createObjectURL(new Blob([data],{type:'application/json'}));let a=document.createElement('a');a.href=url;a.download='News_One_Stories_Backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
-$('importStories').onclick=()=>$('importFile').click();$('importFile').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let data=JSON.parse(await file.text());if(!data||data.app!=='News One Production Teleprompter'||!Array.isArray(data.stories))throw Error('Invalid backup format');if(data.stories.some(s=>typeof s.title!=='string'||typeof s.content!=='string'))throw Error('Invalid story data');let all=await getStories(),count=0;for(const s of data.stories){let title=s.title.trim();if(!title)continue;let base=title,n=2;while(all.some(x=>x.title.toLowerCase()===title.toLowerCase()))title=base+' (imported '+n+++')';all.push({id:'story_'+Date.now()+'_'+Math.random().toString(36).slice(2),title,content:s.content,updatedAt:s.updatedAt||new Date().toISOString()});count++}if(await putStoriesBulk(all)){await renderStories();alert('Restored '+count+' stories to the shared library. Existing stories were preserved.')}}catch(err){alert('Could not restore backup: '+err.message)}finally{e.target.value=''}};
-
-async function bootstrapStoryLibrary(){
-  const local=localStories();
-  let stories=await getStories();
-  // If the server library is new/empty, migrate any stories already saved in this browser.
-  if(stories.length===0 && local.length){
-    await putStoriesBulk(local);
-    stories=serverStories;
-  }
-  const loaded=stories.find(s=>s.id===activeStory);
-  if(loaded){$('editor').value=loaded.content;$('storyTitle').value=loaded.title;$('text').textContent=loaded.content}
-  else if(stories.length){
-    const latest=stories.slice().sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''))[0];
-    activeStory=latest.id;localStorage.setItem(ACTIVE_KEY,activeStory);$('editor').value=latest.content;$('storyTitle').value=latest.title;$('text').textContent=latest.content;
-  }else if($('editor').value){
-    // Preserve the old single-script storage until the user explicitly saves it.
-    $('text').textContent=$('editor').value;
-  }
-}
-
-$('editor').value=localStorage.getItem('n1text')||'';
-bootstrapStoryLibrary();
-$('speed').value=localStorage.getItem('n1speed')||45;$('size').value=Math.max(24,Math.min(1000,Number(localStorage.getItem('n1size'))||80));$('secs').value=localStorage.getItem('n1secs')||5;sync();$('rotation').value=localStorage.getItem('n1angle')||'0';updateOrientation();
-const vmixFlipKey='n1VmixMonitorFlipY';
-function applyMonitorFlip(){const on=localStorage.getItem(vmixFlipKey)==='1';$('vmixFrameWrap').classList.toggle('flipped',on);$('flipMonitor').textContent=on?'↕ FLIP BACK':'↕ FLIP VERTICAL'}
-$('flipMonitor').onclick=()=>{const on=localStorage.getItem(vmixFlipKey)==='1';localStorage.setItem(vmixFlipKey,on?'0':'1');applyMonitorFlip()};
-$('monitorBtn').onclick=()=>{const panel=$('vmixPanel');panel.classList.toggle('open');if(panel.classList.contains('open')){$('vmixFrame').src='http://'+location.hostname+':8088/livelan';applyMonitorFlip()}};
-$('closeMonitor').onclick=()=>{$('vmixPanel').classList.remove('open');$('vmixFrame').src='about:blank'};
-applyMonitorFlip();
-$('syncUrl').value=localStorage.getItem('n1syncUrl')||'/api/state';
-startSyncPolling();
-if ('serviceWorker' in navigator && location.protocol === 'https:') {window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=22').catch(console.warn));}
+render();loadStories();poll();
 </script></body></html>

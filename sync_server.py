@@ -1,38 +1,26 @@
-#!/usr/bin/env python3
-import json
-import os
-import threading
-import time
-import socket
-import urllib.request
-import urllib.parse
+import json, os, time, threading, urllib.parse, urllib.request
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
 PORT = 8091
-STORIES_FILE = os.path.join(ROOT, "stories.json")
+BASE = os.path.dirname(os.path.abspath(__file__))
+STORIES_FILE = os.path.join(BASE, "stories.json")
 
 state_lock = threading.Lock()
-stories_lock = threading.Lock()
 state = {
     "id": 0,
     "command": "idle",
     "targetAt": 0,
     "seconds": 0,
-    "serverNow": int(time.time() * 1000),
-    "recording": False,
+    "serverNow": int(time.time()*1000),
+    "recording": False
 }
-record_timer = None
-record_timer_lock = threading.Lock()
-
 
 def load_stories():
     try:
         with open(STORIES_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return data if isinstance(data, list) else []
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
+            x = json.load(f)
+        return x if isinstance(x, list) else []
+    except Exception:
         return []
 
 def save_stories(stories):
@@ -41,229 +29,134 @@ def save_stories(stories):
         json.dump(stories, f, ensure_ascii=False, indent=2)
     os.replace(tmp, STORIES_FILE)
 
-
-def vmix_request(function):
-    """Call the local vMix HTTP API from Windows, avoiding browser/CORS issues."""
-    url = "http://127.0.0.1:8088/api/?" + urllib.parse.urlencode({"Function": function})
-    req = urllib.request.Request(url, method="GET", headers={"Cache-Control": "no-cache"})
-    with urllib.request.urlopen(req, timeout=3) as resp:
-        return resp.read().decode("utf-8", errors="replace")
-
-def set_recording(value):
-    with state_lock:
-        state["recording"] = bool(value)
-
-def scheduled_start(generation):
-    global record_timer
-    with state_lock:
-        if state["id"] != generation or state["command"] != "countdown":
-            return
+def vmix(command):
+    # vMix Web Controller API endpoint. This is intentionally server-side
+    # so the tablet does not need to make cross-origin calls to vMix.
+    url = "http://127.0.0.1:8088/api/?Function=" + urllib.parse.quote(command, safe="")
     try:
-        vmix_request("StartRecording")
-        set_recording(True)
-        print("vMix recording started at countdown zero.")
-    except Exception as exc:
-        print("ERROR: Could not start vMix recording:", exc)
+        with urllib.request.urlopen(url, timeout=2) as r:
+            return r.status == 200
+    except Exception as e:
+        print("vMix command failed:", command, e)
+        return False
 
-def schedule_recording(target_at, generation):
-    global record_timer
-    with record_timer_lock:
-        if record_timer:
-            record_timer.cancel()
-        delay = max(0, (target_at - int(time.time() * 1000)) / 1000.0)
-        record_timer = threading.Timer(delay, scheduled_start, args=(generation,))
-        record_timer.daemon = True
-        record_timer.start()
-
-def cancel_recording_timer():
-    global record_timer
-    with record_timer_lock:
-        if record_timer:
-            record_timer.cancel()
-            record_timer = None
-
-def clean_story(s):
-    if not isinstance(s, dict):
-        return None
-    sid = str(s.get("id", "")).strip()
-    title = str(s.get("title", "")).strip()
-    content = str(s.get("content", ""))
-    if not sid or not title:
-        return None
-    return {
-        "id": sid,
-        "title": title,
-        "content": content,
-        "updatedAt": str(s.get("updatedAt") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())),
-    }
+def set_state(command, seconds=0, target=0, recording=False):
+    with state_lock:
+        state["id"] += 1
+        state["command"] = command
+        state["seconds"] = seconds
+        state["targetAt"] = target
+        state["serverNow"] = int(time.time()*1000)
+        state["recording"] = recording
 
 class Handler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=ROOT, **kwargs)
-
     def log_message(self, fmt, *args):
         print("[%s] %s" % (self.log_date_time_string(), fmt % args))
 
-    def _send_json(self, code, payload):
-        raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    def end_json(self, obj, code=200):
+        raw = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.send_header("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
         self.wfile.write(raw)
 
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
-
     def do_GET(self):
-        path = urlparse(self.path).path
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
         if path == "/api/state":
             with state_lock:
-                payload = dict(state)
-                payload["serverNow"] = int(time.time() * 1000)
-            self._send_json(200, payload)
-            return
-        if path == "/api/stories":
-            with stories_lock:
-                stories = load_stories()
-            self._send_json(200, {"ok": True, "stories": stories})
-            return
-        super().do_GET()
+                out = dict(state)
+                out["serverNow"] = int(time.time()*1000)
+            return self.end_json(out)
 
-    def _read_json(self):
-        length = int(self.headers.get("Content-Length", "0"))
-        return json.loads(self.rfile.read(length) or b"{}")
+        if path == "/api/stories":
+            return self.end_json({"ok": True, "stories": load_stories()})
+
+        if path == "/api/health":
+            return self.end_json({"ok": True, "serverNow": int(time.time()*1000)})
+
+        return super().do_GET()
 
     def do_POST(self):
-        path = urlparse(self.path).path
+        parsed = urllib.parse.urlparse(self.path)
+        length = int(self.headers.get("Content-Length", "0"))
         try:
-            data = self._read_json()
-        except Exception as exc:
-            self._send_json(400, {"ok": False, "error": str(exc)})
-            return
-
-        if path == "/api/stories":
-            story = clean_story(data.get("story") if isinstance(data, dict) else data)
-            if not story:
-                self._send_json(400, {"ok": False, "error": "Invalid story"})
-                return
-            with stories_lock:
-                stories = load_stories()
-                replaced = False
-                for i, old in enumerate(stories):
-                    if old.get("id") == story["id"]:
-                        stories[i] = story
-                        replaced = True
-                        break
-                if not replaced:
-                    stories.append(story)
-                save_stories(stories)
-            self._send_json(200, {"ok": True, "story": story, "stories": stories})
-            return
-
-        if path == "/api/stories/bulk":
-            incoming = data.get("stories", []) if isinstance(data, dict) else []
-            if not isinstance(incoming, list):
-                self._send_json(400, {"ok": False, "error": "stories must be an array"})
-                return
-            with stories_lock:
-                stories = load_stories()
-                by_id = {s.get("id"): s for s in stories if s.get("id")}
-                for raw in incoming:
-                    story = clean_story(raw)
-                    if story:
-                        old = by_id.get(story["id"])
-                        if not old or str(story.get("updatedAt", "")) >= str(old.get("updatedAt", "")):
-                            by_id[story["id"]] = story
-                stories = list(by_id.values())
-                save_stories(stories)
-            self._send_json(200, {"ok": True, "stories": stories})
-            return
-
-        if path == "/api/command":
-            command = str(data.get("command", "")).strip()
-            if command not in {"countdown", "cancel", "stop"}:
-                self._send_json(400, {"ok": False, "error": "Unknown command"})
-                return
-            if command in {"cancel", "stop"}:
-                cancel_recording_timer()
-            with state_lock:
-                state["id"] += 1
-                state["command"] = command
-                state["targetAt"] = int(data.get("targetAt") or 0)
-                state["seconds"] = int(data.get("seconds") or 0)
-                state["serverNow"] = int(time.time() * 1000)
-                if command in {"cancel", "stop"}:
-                    state["recording"] = False
-                generation = state["id"]
-                payload = dict(state)
-            if command == "countdown":
-                schedule_recording(payload["targetAt"], generation)
-            elif command == "stop":
-                try:
-                    vmix_request("StopRecording")
-                except Exception as exc:
-                    print("WARNING: Could not stop vMix recording:", exc)
-            self._send_json(200, {"ok": True, **payload})
-            return
-
-        if path == "/api/vmix":
-            function = str(data.get("function", "")).strip()
-            if function not in {"StartRecording", "StopRecording"}:
-                self._send_json(400, {"ok": False, "error": "Unsupported vMix function"})
-                return
-            try:
-                result = vmix_request(function)
-                set_recording(function == "StartRecording")
-                self._send_json(200, {"ok": True, "function": function, "response": result})
-            except Exception as exc:
-                self._send_json(502, {"ok": False, "error": str(exc)})
-            return
-
-        self.send_error(404)
-
-    def do_DELETE(self):
-        parsed = urlparse(self.path)
-        if parsed.path != "/api/stories":
-            self.send_error(404)
-            return
-        try:
-            data = self._read_json()
+            body = self.rfile.read(length) if length else b"{}"
+            data = json.loads(body.decode("utf-8"))
         except Exception:
-            data = {}
-        sid = str(data.get("id", "")).strip()
-        if not sid:
-            self._send_json(400, {"ok": False, "error": "Missing story id"})
-            return
-        with stories_lock:
-            stories = [s for s in load_stories() if s.get("id") != sid]
+            return self.end_json({"ok": False, "error": "Invalid JSON"}, 400)
+
+        if parsed.path == "/api/stories":
+            stories = data.get("stories")
+            if not isinstance(stories, list):
+                return self.end_json({"ok": False, "error": "stories must be an array"}, 400)
             save_stories(stories)
-        self._send_json(200, {"ok": True, "stories": stories})
+            return self.end_json({"ok": True, "stories": stories})
+
+        if parsed.path == "/api/story/save":
+            story = data.get("story")
+            if not isinstance(story, dict) or not story.get("id") or not story.get("title"):
+                return self.end_json({"ok": False, "error": "Invalid story"}, 400)
+            stories = load_stories()
+            stories = [s for s in stories if s.get("id") != story["id"]]
+            stories.append(story)
+            stories.sort(key=lambda x: x.get("updatedAt",""), reverse=True)
+            save_stories(stories)
+            return self.end_json({"ok": True, "story": story, "stories": stories})
+
+        if parsed.path == "/api/story/delete":
+            sid = str(data.get("id",""))
+            stories = [s for s in load_stories() if str(s.get("id")) != sid]
+            save_stories(stories)
+            return self.end_json({"ok": True, "stories": stories})
+
+        if parsed.path == "/api/countdown":
+            seconds = max(0, min(60, int(data.get("seconds", 10))))
+            now = int(time.time()*1000)
+            target = now + seconds*1000
+            set_state("countdown", seconds, target, False)
+            # Recording is triggered by a timer thread at the exact target.
+            def worker(expected_id):
+                delay = max(0, (target - int(time.time()*1000))/1000)
+                time.sleep(delay)
+                with state_lock:
+                    if state["id"] != expected_id or state["command"] != "countdown":
+                        return
+                ok = vmix("StartRecording")
+                with state_lock:
+                    state["command"] = "recording"
+                    state["seconds"] = 0
+                    state["targetAt"] = target
+                    state["serverNow"] = int(time.time()*1000)
+                    state["recording"] = bool(ok)
+                print("COUNTDOWN ZERO -> StartRecording:", ok)
+            expected_id = state["id"]
+            threading.Thread(target=worker, args=(expected_id,), daemon=True).start()
+            return self.end_json({"ok": True, "state": state})
+
+        if parsed.path == "/api/stop":
+            ok = vmix("StopRecording")
+            set_state("idle", 0, 0, False)
+            return self.end_json({"ok": True, "vmix": ok, "state": state})
+
+        if parsed.path == "/api/ping-vmix":
+            # A lightweight API check. Start/stop are not issued here.
+            try:
+                urllib.request.urlopen("http://127.0.0.1:8088/api/", timeout=2).read(100)
+                return self.end_json({"ok": True, "vmix": True})
+            except Exception as e:
+                return self.end_json({"ok": True, "vmix": False, "error": str(e)})
+
+        return self.end_json({"ok": False, "error": "Not found"}, 404)
 
 if __name__ == "__main__":
     if not os.path.exists(STORIES_FILE):
         save_stories([])
-    server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
-    print(f"News One Production sync server running on port {PORT}")
-    print(f"Control Center: http://127.0.0.1:{PORT}/control.html")
-    try:
-        host_ip = socket.gethostbyname(socket.gethostname())
-    except Exception:
-        host_ip = "<THIS-PC-IP>"
-    print(f"Tablet Teleprompter: http://{host_ip}:{PORT}/index.html")
-    print("Central story library: http://<THIS-PC-IP>:%d/api/stories" % PORT)
+    print("News One Production sync server v23 running on port 8091")
+    print("Control Center: http://127.0.0.1:8091/control.html")
+    print("Tablet Teleprompter: http://YOUR-PC-IP:8091/index.html")
     print("Keep this window running while recording.")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.server_close()
+    ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
